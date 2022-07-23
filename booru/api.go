@@ -2,8 +2,8 @@ package booru
 
 import (
 	"context"
-	"time"
 	"net/http"
+	"time"
 )
 
 // API is an interface that neatly abstracts the hard parts of parsing and

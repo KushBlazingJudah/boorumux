@@ -22,9 +22,10 @@ func main() {
 		Prefix: *Prefix,
 	}
 	db, _ := url.Parse("https://safebooru.donmai.us")
+	// gb, _ := url.Parse("https://gelbooru.com")
 	pu, _ := url.Parse("socks5://127.0.0.1:9050")
 	bm.Boorus = map[string]booru.API{
-		"test": &booru.Danbooru{
+		"safebooru": &booru.Danbooru{
 			URL: db,
 			HttpClient: &http.Client{
 				Transport: &http.Transport{
@@ -32,6 +33,14 @@ func main() {
 				},
 			},
 		},
+		/* "gelbooru": &booru.Gelbooru{
+			URL: gb,
+			HttpClient: &http.Client{
+				Transport: &http.Transport{
+					Proxy: http.ProxyURL(pu),
+				},
+			},
+		}, */
 	}
 
 	mux := http.NewServeMux()

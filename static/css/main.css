@@ -74,3 +74,4 @@ ul#taglist li a:hover, ul#boorulist li a:hover {
 
 .add { color: var(--color02); }
 .remove { color: var(--color01); }
+.active { background: var(--background); }
