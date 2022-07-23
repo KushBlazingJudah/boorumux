@@ -17,6 +17,7 @@ Here's a list of things planned, strikethrough is complete:
 - Post view
 - Aggregating several boorus at once
 - Caching
+- Configuration
 
 ## Supported APIs
 
