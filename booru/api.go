@@ -15,7 +15,8 @@ type API interface {
 	Page(ctx context.Context, q Query, page int) ([]Post, error)
 
 	// Post returns a specific post referenced by its numeric ID.
-	Post(ctx context.Context, id int) (Post, error)
+	// The post returned will be nil when error is not.
+	Post(ctx context.Context, id int) (*Post, error)
 }
 
 // Query is a list of options passed to a booru API that are used as a query to
