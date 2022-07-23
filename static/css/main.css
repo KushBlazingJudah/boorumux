@@ -38,7 +38,7 @@ h1,h2,h3 { margin-bottom: 0.1em; }
 #sidebar {
 	float: left;
 	width: 12rem;
-	height: 100%;
+	height: 100vh;
 
 	background: var(--color00);
 	padding: 2em;
@@ -50,21 +50,27 @@ h1,h2,h3 { margin-bottom: 0.1em; }
 #container {
 	margin-left: 17rem;
 	padding: 1em;
+	max-width: 100%;
 }
 
-ul#taglist {
+#inner {
+	width: 75%;
+	margin: auto;
+}
+
+ul#taglist, ul#boorulist {
 	list-style-type: none;
 	padding-left: 0;
 	margin: 0;
 }
 
-ul#taglist li a {
+ul#taglist li a, ul#boorulist li a {
 	text-decoration: none;
 }
 
-ul#taglist li a:hover {
+ul#taglist li a:hover, ul#boorulist li a:hover {
 	text-decoration: 1px underline;
 }
 
-ul#taglist .add { color: var(--color02); }
-ul#taglist .remove { color: var(--color01); }
+.add { color: var(--color02); }
+.remove { color: var(--color01); }

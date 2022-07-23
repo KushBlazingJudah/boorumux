@@ -1,3 +1,4 @@
+{{$booru := .booru}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,20 +11,32 @@
 	<div id="sidebar">
 		<h1>Boorumux</h1>
 
+		<h3>Boorus</h3>
+		<ul id="boorulist">
+			<li class="booru"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="booruname">{{$booru}}</a></li>
+			{{range .boorus}}
+			{{if ne . $booru}}
+			<li class="booru"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="booruname">{{$booru}}</a></li>
+			{{end}}
+			{{end}}
+		</ul>
+
 		<h3>Tags</h3>
 		<ul id="taglist">
-			<li class="tag"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="tagname">hello world</a></li>
+			{{range .tags}}
+			<li class="tag"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="tagname">{{.}}</a></li>
+			{{end}}
 		</ul>
 	</div>
 
 	<div id="container">
-		{{range .}}
-			<div id="post">
-				<h1>{{.Source}}</h1>
-				<p>{{.Tags}}</p>
-				<p><img src="/proxy?t={{(index .Images 0).Href}}"></img></p>
-			</div>
-		{{end}}
+		<div id="inner">
+			{{range .posts}}
+				<a href="/{{$booru}}/post/{{.Id}}" class="post" title="{{.Tags}}">
+					<img src="/proxy?t={{(index .Images 1).Href}}"></img>
+				</a>
+			{{end}}
+		</div>
 	</div>
 </body>
 </html>

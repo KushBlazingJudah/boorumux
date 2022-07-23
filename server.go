@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"io"
 	"fmt"
+	"sync"
+	"strings"
+	"sort"
 
 	"github.com/KushBlazingJudah/boorumux/booru"
 )
@@ -23,8 +26,13 @@ type Server struct {
 	Prefix string
 
 	// Boorus is a mapping of human readable names to booru APIs.
-	// This should be filled in from a config file.
+	// This should be filled in from a config file, and not written to after
+	// the server starts.
 	Boorus map[string]booru.API
+
+	boorus []string
+
+	sync.Mutex
 }
 
 func init() {
@@ -38,6 +46,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// We only support GET
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
+	}
+
+	if len(s.boorus) != len(s.Boorus) {
+		// Need to regenerate the text-only booru list
+		s.Lock()
+		s.boorus = make([]string, 0, len(s.Boorus))
+		for k := range s.Boorus {
+			s.boorus = append(s.boorus, k)
+		}
+		s.Unlock()
 	}
 
 	// Call upon test booru for test data
@@ -73,5 +91,26 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	templates.ExecuteTemplate(w, "page.html", test)
+	// Find all of the tags on this page
+	// To keep things simple, we're going to simply use a map[string]struct{}.
+	// This ensures that results are unique, we just need to convert it into a
+	// string slice.
+	tagmap := map[string]struct{}{}
+	for _, p := range test {
+		for _, v := range p.Tags {
+			tagmap[v] = struct{}{}
+		}
+	}
+	tags := make([]string, 0, len(tagmap))
+	for k := range tagmap {
+		tags = append(tags, strings.ReplaceAll(k, "_", " "))
+	}
+	sort.Strings(tags)
+
+	templates.ExecuteTemplate(w, "page.html", map[string]interface{}{
+		"booru": "test",
+		"boorus": s.boorus,
+		"tags": tags,
+		"posts": test,
+	})
 }
