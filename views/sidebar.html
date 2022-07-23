@@ -1,0 +1,27 @@
+{{$booru := .booru}}
+<div id="sidebar">
+	<h1>Boorumux</h1>
+	<form action="/{{$booru}}" id="search" method="get">
+		<input type="text" id="q" name="q" placeholder="rating:safe touhou..." value="{{.q}}">
+	</form>
+
+	<h3>Boorus</h3>
+	<ul id="boorulist">
+		<li class="booru active"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="booruname">{{$booru}}</a></li>
+		{{range .boorus}}
+		{{if ne . $booru}}
+		<li class="booru"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="booruname" href="/{{.}}">{{.}}</a></li>
+		{{end}}
+		{{end}}
+	</ul>
+
+	<h3>Tags</h3>
+	<ul id="taglist">
+		{{range .activeTags}}
+		<li class="tag active"><a class="add" href="#">|</a> <a class="remove" href="#">-</a> <a class="tagname">{{.}}</a></li>
+		{{end}}
+		{{range .tags}}
+		<li class="tag"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="tagname">{{.}}</a></li>
+		{{end}}
+	</ul>
+</div>

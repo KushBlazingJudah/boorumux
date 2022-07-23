@@ -47,7 +47,7 @@ type Server struct {
 
 func init() {
 	// Compile all of the templates.
-	templates = template.Must(template.New("").ParseGlob("./views/*.html"))
+	templates = template.Must(template.New("").Funcs(template.FuncMap{"embed": func() error { panic("wtf") }}).ParseGlob("./views/*.html"))
 }
 
 // ServeHTTP serves a requested page.
@@ -172,7 +172,7 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	sort.Strings(tags)
 
 	// Render it out
-	templates.ExecuteTemplate(w, "page.html", map[string]interface{}{
+	tmpldata := map[string]interface{}{
 		"booru":      targetBooru,
 		"boorus":     s.boorus,
 		"activeTags": tags,
@@ -180,7 +180,10 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 		"posts":      data,
 		"page":       page,
 		"q":          r.URL.Query().Get("q"),
-	})
+	}
+	templates.Funcs(template.FuncMap{"embed": func() error {
+		return templates.Lookup("page.html").Execute(w, tmpldata)
+	}}).ExecuteTemplate(w, "main.html", tmpldata)
 }
 
 func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBooru string, target string) {
