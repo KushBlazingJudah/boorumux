@@ -99,12 +99,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		action = reqPage
-
-		// Parse tags
-		if t := r.URL.Query().Get("tags"); t != "" {
-			tags = strings.Split(t, " ")
-			fmt.Println(tags) // DEBUG
-		}
 	} else if p := r.URL.Query().Get("post"); p != "" {
 		// Page request
 		v, err = strconv.Atoi(p)
@@ -115,6 +109,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		action = reqPost
 	} else if r.URL.Query().Get("proxy") != "" {
 		action = reqProxy
+	}
+
+	// Parse tags
+	if t := r.URL.Query().Get("q"); t != "" {
+		tags = strings.Split(t, " ")
 	}
 
 	switch action {
@@ -128,7 +127,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru string, page int, tags []string) {
-	fmt.Println(targetBooru)
 	data, err := s.Boorus[targetBooru].Page(context.TODO(), booru.Query{Tags: tags}, page)
 	if err != nil {
 		panic(err)
@@ -181,6 +179,7 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 		"tags":       pageTags,
 		"posts":      data,
 		"page":       page,
+		"q":          r.URL.Query().Get("q"),
 	})
 }
 
@@ -202,5 +201,4 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBoor
 	if _, err := io.Copy(w, res.Body); err != nil {
 		panic(err)
 	}
-	return
 }

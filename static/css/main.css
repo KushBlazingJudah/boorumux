@@ -72,6 +72,8 @@ ul#taglist li a:hover, ul#boorulist li a:hover {
 	text-decoration: 1px underline;
 }
 
+#q { box-sizing: border-box; width: 100%; }
+
 .add { color: var(--color02); }
 .remove { color: var(--color01); }
 .active { background: var(--background); }
