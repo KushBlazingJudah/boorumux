@@ -1,16 +1,16 @@
 package booru
 
 import (
-	"fmt"
-	"time"
-	"strings"
-	"mime"
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"mime"
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"errors"
-	"encoding/json"
+	"strings"
+	"time"
 )
 
 // Danbooru implements the Danbooru API.
@@ -42,10 +42,10 @@ type danbooruPost struct {
 
 	Source string
 
-	Ext string `json:"file_ext"`
-	Size int `json:"file_size"`
+	Ext         string `json:"file_ext"`
+	Size        int    `json:"file_size"`
 	OriginalUrl string `json:"file_url"`
-	ThumbUrl string `json:"preview_file_url"`
+	ThumbUrl    string `json:"preview_file_url"`
 
 	Tags string `json:"tag_string"`
 }
@@ -68,23 +68,23 @@ var danbooruErrors = map[int]error{
 func (dp danbooruPost) toPost() Post {
 	// Luckily for us, there's a rather direct conversion.
 	return Post{
-		Id: dp.Id,
-		Score: dp.Score,
-		Source: dp.Source,
+		Id:      dp.Id,
+		Score:   dp.Score,
+		Source:  dp.Source,
 		Created: dp.Created,
 		Updated: dp.Updated,
-		Tags: strings.Split(dp.Tags, " "),
+		Tags:    strings.Split(dp.Tags, " "),
 		Images: []Image{
 			{
-				Href: dp.OriginalUrl,
-				MIME: mime.TypeByExtension("." + dp.Ext), // mime asks we include the dot
-				Size: dp.Size,
+				Href:      dp.OriginalUrl,
+				MIME:      mime.TypeByExtension("." + dp.Ext), // mime asks we include the dot
+				Size:      dp.Size,
 				Thumbnail: false,
 			},
 			{
-				Href: dp.ThumbUrl,
-				MIME: "image/jpeg", // assumption
-				Size: 0, // we are never told
+				Href:      dp.ThumbUrl,
+				MIME:      "image/jpeg", // assumption
+				Size:      0,            // we are never told
 				Thumbnail: true,
 			},
 		},
