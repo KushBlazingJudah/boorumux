@@ -120,7 +120,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case reqPage:
 		s.pageHandler(w, r, targetBooru, v, tags)
 	case reqPost:
-		s.pageHandler(w, r, targetBooru, v, nil)
+		s.postHandler(w, r, targetBooru, v)
 	case reqProxy:
 		s.proxyHandler(w, r, targetBooru, r.URL.Query().Get("proxy"))
 	}
@@ -181,8 +181,37 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 		"page":       page,
 		"q":          r.URL.Query().Get("q"),
 	}
+
 	templates.Funcs(template.FuncMap{"embed": func() error {
 		return templates.Lookup("page.html").Execute(w, tmpldata)
+	}}).ExecuteTemplate(w, "main.html", tmpldata)
+}
+
+func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru string, id int) {
+	data, err := s.Boorus[targetBooru].Post(context.TODO(), id)
+	if err != nil {
+		panic(err)
+	}
+
+	// Make tags look nicer
+	for i, v := range data.Tags {
+		data.Tags[i] = strings.ReplaceAll(v, "_", " ")
+	}
+
+	// Sort it out
+	sort.Strings(data.Tags)
+
+	// Render it out
+	tmpldata := map[string]interface{}{
+		"booru":  targetBooru,
+		"boorus": s.boorus,
+		"tags":   data.Tags,
+		"post":   data,
+		"q":      r.URL.Query().Get("q"),
+	}
+
+	templates.Funcs(template.FuncMap{"embed": func() error {
+		return templates.Lookup("post.html").Execute(w, tmpldata)
 	}}).ExecuteTemplate(w, "main.html", tmpldata)
 }
 

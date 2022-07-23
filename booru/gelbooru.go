@@ -146,10 +146,25 @@ func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, error) 
 }
 
 func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
+	urlq := queryify(map[string]string{
+		"page": "dapi",
+		"s":    "post",
+		"q":    "index",
+		"id":   fmt.Sprint(id),
+		"json": "1",
+	})
+
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
-	u.Path = filepath.Join(u.Path, fmt.Sprintf("posts/%d.json", id))
+	u.Path = filepath.Join(u.Path, "/index.php")
+
+	if u.RawQuery != "" {
+		// Something is already here
+		u.RawQuery += "&"
+	}
+
+	u.RawQuery += urlq
 
 	// Create a request object
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
@@ -170,12 +185,16 @@ func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
 	}
 
 	// Parse the results
-	var rawPost gelbooruPost
-
-	if err := json.NewDecoder(res.Body).Decode(&rawPost); err != nil {
+	var rawResp gelbooruResp
+	if err := json.NewDecoder(res.Body).Decode(&rawResp); err != nil {
 		return nil, err
 	}
 
-	out := rawPost.toPost()
+	// Convert
+	if len(rawResp.Post) == 0 {
+		return nil, fmt.Errorf("gelbooru: not found")
+	}
+
+	out := rawResp.Post[0].toPost()
 	return &out, nil
 }

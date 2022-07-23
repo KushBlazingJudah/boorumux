@@ -21,6 +21,7 @@ Here's a list of things planned, strikethrough is complete:
 ## Supported APIs
 
 - Danbooru (100% finished)
+- Gelbooru (100% finished)
 
 ## Running
 

@@ -1,0 +1,7 @@
+{{$booru := .booru}}
+{{template "sidebar.html" .}}
+<div id="container">
+	<div id="inner">
+		<img src="/{{$booru}}?proxy={{(index .post.Images 0).Href}}" id="feature">
+	</div>
+</div>
