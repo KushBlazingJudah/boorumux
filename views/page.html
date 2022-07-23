@@ -17,7 +17,13 @@
 	</div>
 
 	<div id="container">
-		hello, world!
+		{{range .}}
+			<div id="post">
+				<h1>{{.Source}}</h1>
+				<p>{{.Tags}}</p>
+				<p><img src="/proxy?t={{(index .Images 0).Href}}"></img></p>
+			</div>
+		{{end}}
 	</div>
 </body>
 </html>

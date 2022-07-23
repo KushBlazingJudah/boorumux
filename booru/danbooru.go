@@ -91,6 +91,11 @@ func (dp danbooruPost) toPost() Post {
 	}
 }
 
+// HTTP returns the HttpClient that this booru uses.
+func (d *Danbooru) HTTP() *http.Client {
+	return d.HttpClient
+}
+
 func (d *Danbooru) Page(ctx context.Context, q Query, page int) ([]Post, error) {
 	urlq := queryify(map[string]string{
 		"page": fmt.Sprint(page),

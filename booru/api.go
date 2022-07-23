@@ -3,6 +3,7 @@ package booru
 import (
 	"context"
 	"time"
+	"net/http"
 )
 
 // API is an interface that neatly abstracts the hard parts of parsing and
@@ -17,6 +18,9 @@ type API interface {
 	// Post returns a specific post referenced by its numeric ID.
 	// The post returned will be nil when error is not.
 	Post(ctx context.Context, id int) (*Post, error)
+
+	// HTTP returns the HTTP client that this booru uses.
+	HTTP() *http.Client
 }
 
 // Query is a list of options passed to a booru API that are used as a query to

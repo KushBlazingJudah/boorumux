@@ -1,13 +1,17 @@
 package boorumux
 
 import (
+	"context"
 	"html/template"
 	"net/http"
+	"io"
+	"fmt"
 
 	"github.com/KushBlazingJudah/boorumux/booru"
 )
 
 var templates *template.Template
+var test []booru.Post
 
 // Server holds the main configuration for Boorumux and doubles as a
 // http.Handler.
@@ -36,6 +40,38 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = r.URL.EscapedPath()
-	templates.ExecuteTemplate(w, "page.html", nil)
+	// Call upon test booru for test data
+	if test == nil {
+		var err error
+		test, err = s.Boorus["test"].Page(context.TODO(), booru.Query{}, 0)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	ep := r.URL.EscapedPath()
+	if ep == "/proxy" {
+		// We're proxying a page!
+		target := r.URL.Query().Get("t")
+
+		// TODO: Trusted domains
+		req, err := http.NewRequest("GET", target, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		res, err := s.Boorus["test"].HTTP().Do(req)
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+
+		w.Header().Set("Content-Length", fmt.Sprint(res.ContentLength))
+		w.Header().Set("Content-Type", res.Header.Get("Content-Type"))
+		if _, err := io.Copy(w, res.Body); err != nil {
+			panic(err)
+		}
+	}
+
+	templates.ExecuteTemplate(w, "page.html", test)
 }

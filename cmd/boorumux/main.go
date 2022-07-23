@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/KushBlazingJudah/boorumux"
+	"github.com/KushBlazingJudah/boorumux/booru"
 )
 
 var (
@@ -18,6 +20,18 @@ func main() {
 
 	bm := &boorumux.Server{
 		Prefix: *Prefix,
+	}
+	db, _ := url.Parse("https://safebooru.donmai.us")
+	pu, _ := url.Parse("socks5://127.0.0.1:9050")
+	bm.Boorus = map[string]booru.API{
+		"test": &booru.Danbooru{
+			URL: db,
+			HttpClient: &http.Client{
+				Transport: &http.Transport{
+					Proxy: http.ProxyURL(pu),
+				},
+			},
+		},
 	}
 
 	mux := http.NewServeMux()
