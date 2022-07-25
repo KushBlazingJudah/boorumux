@@ -71,6 +71,17 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ep := r.URL.EscapedPath()
 	if ep == "/favicon.ico" {
 		return
+	} else if ep == "/" {
+		// Render the index, we don't need to do much for that though
+		// Render it out
+		tmpldata := map[string]interface{}{
+			"boorus":     s.boorus,
+		}
+
+		templates.Funcs(template.FuncMap{"embed": func() error {
+			return templates.Lookup("index.html").Execute(w, tmpldata)
+		}}).ExecuteTemplate(w, "main.html", tmpldata)
+		return
 	}
 
 	// Determine what kind of request this is

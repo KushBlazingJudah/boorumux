@@ -58,6 +58,14 @@ h1,h2,h3 { margin-bottom: 0.1em; }
 	margin: auto;
 }
 
+#index {
+	width: 56rem;
+	max-width: 95%;
+	margin: auto;
+}
+#index h1 { font-size: 3em; }
+#index .booruname { font-size: 2em; }
+
 ul#taglist, ul#boorulist {
 	list-style-type: none;
 	padding-left: 0;
