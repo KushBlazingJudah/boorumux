@@ -85,3 +85,7 @@ ul#taglist li a:hover, ul#boorulist li a:hover {
 .add { color: var(--color02); }
 .remove { color: var(--color01); }
 .active { background: var(--background); }
+
+#feature { width: 100%; }
+.info b { width: 100%; display: block; }
+.info + .info { border-top: 1px solid var(--foreground); }

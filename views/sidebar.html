@@ -15,6 +15,22 @@
 		{{end}}
 	</ul>
 
+	{{if .post}}
+	<h3>Info</h3>
+	<div class="info">
+		<b>Score</b>
+		<span>{{.post.Score}}</span>
+	</div>
+	<div class="info">
+		<b>Created</b>
+		<span>{{.post.Created}}</span>
+	</div>
+	<div class="info">
+		<b>Source</b>
+		<a href="{{.post.Source}}">{{.post.Source}}</a>
+	</div>
+	{{end}}
+
 	<h3>Tags</h3>
 	<ul id="taglist">
 		{{range .activeTags}}

@@ -3,7 +3,7 @@
 <div id="container">
 	<div id="inner">
 		{{range .posts}}
-		<a href="/{{$booru}}?post={{.Id}}" class="post" title="{{.Tags}}">
+		<a href="/{{$booru}}?post={{.Id}}" class="post" title="{{.Tags}}" data-full="/{{$booru}}?proxy={{(index .Images 0).Href}}">
 			<img src="/{{$booru}}?proxy={{(index .Images 1).Href}}"></img>
 		</a>
 		{{end}}
