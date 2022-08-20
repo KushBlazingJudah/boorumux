@@ -40,6 +40,11 @@ type Server struct {
 	// the server starts.
 	Boorus map[string]booru.API
 
+	// Blacklist is a list of blacklisted tags.
+	// Posts containing these tags will not be shown in the page view, however
+	// if explicitly requested they will be presented.
+	Blacklist []string
+
 	boorus []string
 
 	sync.Mutex
@@ -145,6 +150,17 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	if err != nil {
 		panic(err)
 	}
+
+	// Filter out blacklisted tags
+	// This looks weird but trust me on this; it's simply an in-place filter.
+	n := 0
+	for _, v := range data {
+		if !mutual(v.Tags, s.Blacklist) {
+			data[n] = v
+			n++
+		}
+	}
+	data = data[:n]
 
 	// Find all of the tags on this page
 	// To keep things simple, we're going to simply use a map[string]struct{}.
