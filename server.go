@@ -47,7 +47,10 @@ type Server struct {
 
 func init() {
 	// Compile all of the templates.
-	templates = template.Must(template.New("").Funcs(template.FuncMap{"embed": func() error { panic("wtf") }}).ParseGlob("./views/*.html"))
+	templates = template.Must(template.New("").Funcs(template.FuncMap{
+		"embed": func() error { panic("wtf") },
+		"unhumantag": func(s string) string { return strings.ReplaceAll(s, " ", "_") },
+	}).ParseGlob("./views/*.html"))
 }
 
 // ServeHTTP serves a requested page.

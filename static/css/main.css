@@ -80,6 +80,8 @@ ul#taglist li a:hover, ul#boorulist li a:hover {
 	text-decoration: 1px underline;
 }
 
+.tagname:link, .tagname:visited { color: unset; }
+
 #q { box-sizing: border-box; width: 100%; }
 
 .add { color: var(--color02); }
