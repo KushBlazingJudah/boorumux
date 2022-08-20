@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/KushBlazingJudah/boorumux"
@@ -15,32 +18,61 @@ var (
 	Listen = flag.String("addr", "localhost:8080", "Listening address of the HTTP server.")
 )
 
+type cfg struct {
+	Proxy   string
+	Sources map[string]struct {
+		Type, Url string
+	}
+	Blacklist []string
+}
+
 func main() {
 	flag.Parse()
 
 	bm := &boorumux.Server{
 		Prefix: *Prefix,
 	}
-	sb, _ := url.Parse("https://safebooru.donmai.us")
-	gb, _ := url.Parse("https://gelbooru.com")
+	f, err := os.Open("./boorumux.json")
+	if err != nil {
+		log.Fatalf("failed opening config: %v", err)
+	}
+	defer f.Close()
+
+	c := cfg{}
+	if err := json.NewDecoder(f).Decode(&c); err != nil {
+		log.Fatalf("failed reading config: %v", err)
+	}
+
+	// TODO: Config
 	pu, _ := url.Parse("socks5://127.0.0.1:9050")
-	bm.Boorus = map[string]booru.API{
-		"safebooru": &booru.Danbooru{
-			URL: sb,
-			HttpClient: &http.Client{
-				Transport: &http.Transport{
-					Proxy: http.ProxyURL(pu),
-				},
-			},
+	ht := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(pu),
 		},
-		"gelbooru": &booru.Gelbooru{
-			URL: gb,
-			HttpClient: &http.Client{
-				Transport: &http.Transport{
-					Proxy: http.ProxyURL(pu),
-				},
-			},
-		},
+	}
+
+	bm.Boorus = map[string]booru.API{}
+
+	for k, v := range c.Sources {
+		u, err := url.Parse(v.Url)
+		if err != nil {
+			log.Fatalf("failed parsing url for %s: %v", k, err)
+		}
+
+		switch v.Type {
+		case "danbooru":
+			bm.Boorus[k] = &booru.Danbooru{
+				URL:        u,
+				HttpClient: ht,
+			}
+		case "gelbooru":
+			bm.Boorus[k] = &booru.Gelbooru{
+				URL:        u,
+				HttpClient: ht,
+			}
+		default:
+			panic("unknown source")
+		}
 	}
 
 	mux := http.NewServeMux()

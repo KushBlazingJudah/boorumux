@@ -53,7 +53,7 @@ type Server struct {
 func init() {
 	// Compile all of the templates.
 	templates = template.Must(template.New("").Funcs(template.FuncMap{
-		"embed": func() error { panic("wtf") },
+		"embed":      func() error { panic("wtf") },
 		"unhumantag": func(s string) string { return strings.ReplaceAll(s, " ", "_") },
 	}).ParseGlob("./views/*.html"))
 }
@@ -83,7 +83,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Render the index, we don't need to do much for that though
 		// Render it out
 		tmpldata := map[string]interface{}{
-			"boorus":     s.boorus,
+			"boorus": s.boorus,
 		}
 
 		templates.Funcs(template.FuncMap{"embed": func() error {
