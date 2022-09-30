@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"mime"
 	"net/http"
 	"net/url"
@@ -13,6 +14,8 @@ import (
 )
 
 // Gelbooru implements the Gelbooru API.
+//
+// API documentation: https://gelbooru.com/index.php?page=wiki&s=view&id=18780
 type Gelbooru struct {
 	// URL is the location of where the Gelbooru API is.
 	// This is a necessary field, or else all requests will fail as they have
@@ -46,10 +49,15 @@ type gelbooruPost struct {
 
 	Tags string `json:"tags"`
 
-	// Rating
+	Width, Height int
+	PreviewWidth  int `json:"preview_width"`
+	PreviewHeight int `json:"preview_height"`
 }
 
 type gelbooruResp struct {
+	A struct {
+		Limit, Offset, Total int
+	} `json:"@attributes"`
 	Post []gelbooruPost
 }
 
@@ -62,19 +70,19 @@ func (dp gelbooruPost) toPost() Post {
 		Score:  dp.Score,
 		Source: dp.Source,
 		Tags:   strings.Split(dp.Tags, " "),
-		Images: []Image{
-			{
-				Href:      dp.OriginalUrl,
-				MIME:      mime.TypeByExtension(filepath.Ext(dp.OriginalUrl)), // mime asks we include the dot
-				Size:      0,                                                  // never told
-				Thumbnail: false,
-			},
-			{
-				Href:      dp.ThumbUrl,
-				MIME:      "image/jpeg", // assumption
-				Size:      0,            // we are never told
-				Thumbnail: true,
-			},
+		Original: Image{
+			Href:   dp.OriginalUrl,
+			MIME:   mime.TypeByExtension(filepath.Ext(dp.OriginalUrl)), // mime asks we include the dot
+			Size:   0,                                                  // never told
+			Width:  dp.Width,
+			Height: dp.Height,
+		},
+		Thumbnail: Image{
+			Href:   dp.ThumbUrl,
+			MIME:   "image/jpeg", // assumption
+			Size:   0,            // we are never told
+			Width:  dp.PreviewWidth,
+			Height: dp.PreviewHeight,
 		},
 	}
 
@@ -89,51 +97,43 @@ func (d *Gelbooru) HTTP() *http.Client {
 	return d.HttpClient
 }
 
-func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, error) {
-	urlq := queryify(map[string]string{
-		"page": "dapi",
-		"s":    "post",
-		"q":    "index",
-		"pid":  fmt.Sprint(page),
-		"tags": strings.Join(q.Tags, " "),
-		"json": "1",
-	})
-
+func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, error) {
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
 	u.Path = filepath.Join(u.Path, "/index.php")
-
-	if u.RawQuery != "" {
-		// Something is already here
-		u.RawQuery += "&"
-	}
-
-	u.RawQuery += urlq
+	uq := u.Query()
+	uq.Set("page", "dapi")
+	uq.Set("s", "post")
+	uq.Set("q", "index")
+	uq.Set("pid", fmt.Sprint(page))
+	uq.Set("tags", strings.Join(q.Tags, " "))
+	uq.Set("json", "1")
+	u.RawQuery = uq.Encode()
 
 	// Create a request object
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Do the needful
 	res, err := d.HttpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
 		// Something bad happened, ditch
-		return nil, fmt.Errorf("gelbooru: unknown error (%d)", res.StatusCode)
+		return nil, 0, newHTTPError(res)
 	}
 
 	// Parse the results
 	var rawResp gelbooruResp
 
 	if err := json.NewDecoder(res.Body).Decode(&rawResp); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Convert
@@ -142,29 +142,21 @@ func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, error) 
 		out[i] = v.toPost()
 	}
 
-	return out, nil
+	return out, int(math.Ceil(float64(rawResp.A.Total-rawResp.A.Offset) / float64(rawResp.A.Limit))), nil
 }
 
 func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
-	urlq := queryify(map[string]string{
-		"page": "dapi",
-		"s":    "post",
-		"q":    "index",
-		"id":   fmt.Sprint(id),
-		"json": "1",
-	})
-
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
 	u.Path = filepath.Join(u.Path, "/index.php")
-
-	if u.RawQuery != "" {
-		// Something is already here
-		u.RawQuery += "&"
-	}
-
-	u.RawQuery += urlq
+	uq := u.Query()
+	uq.Set("page", "dapi")
+	uq.Set("s", "post")
+	uq.Set("q", "index")
+	uq.Set("id", fmt.Sprint(id))
+	uq.Set("json", "1")
+	u.RawQuery = uq.Encode()
 
 	// Create a request object
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
@@ -181,7 +173,7 @@ func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
 
 	if res.StatusCode != 200 {
 		// Something bad happened, ditch
-		return nil, fmt.Errorf("gelbooru: unknown error (%d)", res.StatusCode)
+		return nil, newHTTPError(res)
 	}
 
 	// Parse the results

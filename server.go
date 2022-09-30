@@ -17,6 +17,11 @@ import (
 
 var templates *template.Template
 var indexRegexp = regexp.MustCompile(`^/([0-9a-z+]+)/?$`)
+var mapPool = sync.Pool{
+	New: func() any {
+		return map[string]interface{}{}
+	},
+}
 
 type reqType uint
 
@@ -58,6 +63,13 @@ func init() {
 	}).ParseGlob("./views/*.html"))
 }
 
+func checkin(d map[string]interface{}) {
+	for k := range d {
+		delete(d, k)
+	}
+	mapPool.Put(d)
+}
+
 // ServeHTTP serves a requested page.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
@@ -82,9 +94,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if ep == "/" {
 		// Render the index, we don't need to do much for that though
 		// Render it out
-		tmpldata := map[string]interface{}{
-			"boorus": s.boorus,
-		}
+		tmpldata := mapPool.Get().(map[string]interface{})
+		defer checkin(tmpldata)
+		tmpldata["boorus"] = s.boorus
 
 		templates.Funcs(template.FuncMap{"embed": func() error {
 			return templates.Lookup("index.html").Execute(w, tmpldata)
@@ -146,7 +158,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru string, page int, tags []string) {
-	data, err := s.Boorus[targetBooru].Page(context.TODO(), booru.Query{Tags: tags}, page)
+	data, _, err := s.Boorus[targetBooru].Page(context.TODO(), booru.Query{Tags: tags}, page)
 	if err != nil {
 		panic(err)
 	}
@@ -210,15 +222,16 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	sort.Strings(tags)
 
 	// Render it out
-	tmpldata := map[string]interface{}{
-		"booru":      targetBooru,
-		"boorus":     s.boorus,
-		"activeTags": tags,
-		"tags":       pageTags,
-		"posts":      data,
-		"page":       page,
-		"q":          r.URL.Query().Get("q"),
-	}
+	tmpldata := mapPool.Get().(map[string]interface{})
+	defer checkin(tmpldata)
+
+	tmpldata["booru"] = targetBooru
+	tmpldata["boorus"] = s.boorus
+	tmpldata["activeTags"] = tags
+	tmpldata["tags"] = pageTags
+	tmpldata["posts"] = data
+	tmpldata["page"] = page
+	tmpldata["q"] = r.URL.Query().Get("q")
 
 	templates.Funcs(template.FuncMap{"embed": func() error {
 		return templates.Lookup("page.html").Execute(w, tmpldata)
@@ -240,13 +253,14 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	sort.Strings(data.Tags)
 
 	// Render it out
-	tmpldata := map[string]interface{}{
-		"booru":  targetBooru,
-		"boorus": s.boorus,
-		"tags":   data.Tags,
-		"post":   data,
-		"q":      r.URL.Query().Get("q"),
-	}
+	tmpldata := mapPool.Get().(map[string]interface{})
+	defer checkin(tmpldata)
+
+	tmpldata["booru"] = targetBooru
+	tmpldata["boorus"] = s.boorus
+	tmpldata["tags"] = data.Tags
+	tmpldata["post"] = data
+	tmpldata["q"] = r.URL.Query().Get("q")
 
 	templates.Funcs(template.FuncMap{"embed": func() error {
 		return templates.Lookup("post.html").Execute(w, tmpldata)

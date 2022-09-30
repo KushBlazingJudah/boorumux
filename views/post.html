@@ -2,6 +2,6 @@
 {{template "sidebar.html" .}}
 <div id="container">
 	<div id="inner">
-		<img src="/{{$booru}}?proxy={{(index .post.Images 0).Href}}" id="feature">
+		<img src="/{{$booru}}?proxy={{.post.Original.Href}}" id="feature">
 	</div>
 </div>

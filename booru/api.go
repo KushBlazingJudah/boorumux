@@ -2,18 +2,28 @@ package booru
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
+)
+
+var (
+	ErrNotFound = errors.New("booru: not found")
 )
 
 // API is an interface that neatly abstracts the hard parts of parsing and
 // mangling results from the actual booru's API into something easy to use and
 // comprehend.
 type API interface {
-	// Page returns a page from this booru's API.
+	// Page returns a page from this booru's API according to a query.
+	//
 	// The number of posts returned is arbitrary; depending on the filters
 	// used, there may be less than an expected amount.
-	Page(ctx context.Context, q Query, page int) ([]Post, error)
+	//
+	// The integer returned by this function should be the number of remaining
+	// pages, however in the case where it is unknown -1 will be used.
+	Page(ctx context.Context, q Query, page int) ([]Post, int, error)
 
 	// Post returns a specific post referenced by its numeric ID.
 	// The post returned will be nil when error is not.
@@ -46,9 +56,9 @@ type Image struct {
 	// This value may be 0, in which case the file size is unknown.
 	Size int
 
-	// Thumbnail is an indicator for if this image is supposed to be used as an
-	// thumbnail, and is not the full, high resolution image.
-	Thumbnail bool
+	// Width and Height represent the dimensions of the image, which may be 0
+	// if unknown.
+	Width, Height int
 }
 
 // Post contains data related to a specific post on any given booru.
@@ -59,8 +69,9 @@ type Post struct {
 	// Score is the numeric score of this specific post.
 	Score int
 
-	// Source is the source URL for this post.
+	// Source is the source location for this post.
 	// This value may be empty, in which case the source is unknown.
+	// It is usually a URL; if it is, it should be treated as such.
 	Source string
 
 	// Created is the time that this post was created.
@@ -72,7 +83,57 @@ type Post struct {
 	// Tags is a list of tags associated with this specific post.
 	Tags []string
 
-	// Images holds the various images for this post, such as the original
-	// image uploaded to the booru or the thumbnail.
-	Images []Image
+	// Original is the original or highest quality picture for this post.
+	Original Image
+
+	// Thumbnail is a thumbnail for this post.
+	// This is normally the "large" but not "original" size of an image.
+	Thumbnail Image
+}
+
+// HTTPError represents a generic HTTP failure status code message using the
+// error interface.
+type HTTPError struct {
+	// URL is the URL that was requested that returned this error.
+	URL string
+
+	// Code is the status code returned by the server.
+	Code int
+}
+
+func (h HTTPError) Error() string {
+	var msg string
+	switch h.Code {
+	case 204:
+		msg = "no content"
+	case 403:
+		msg = "forbidden"
+	case 404:
+		msg = "not found"
+	case 420:
+		msg = "record could not be saved"
+	case 421:
+		msg = "user throttled"
+	case 422:
+		msg = "locked"
+	case 423:
+		msg = "already exists"
+	case 424:
+		msg = "invalid parameters"
+	case 500:
+		msg = "internal server error"
+	case 503:
+		msg = "unavailable"
+	default:
+		msg = "unknown"
+	}
+
+	return fmt.Sprintf("booru: %s returned status %d: %s", h.URL, h.Code, msg)
+}
+
+func newHTTPError(req *http.Response) HTTPError {
+	return HTTPError{
+		URL:  req.Request.URL.String(),
+		Code: req.StatusCode,
+	}
 }
