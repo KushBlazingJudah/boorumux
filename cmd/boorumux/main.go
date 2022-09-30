@@ -53,6 +53,13 @@ func main() {
 
 	bm.Boorus = map[string]booru.API{}
 
+	for _, v := range c.Blacklist {
+		if bm.Blacklist == nil {
+			bm.Blacklist = make(map[string]struct{})
+		}
+		bm.Blacklist[v] = struct{}{}
+	}
+
 	for k, v := range c.Sources {
 		u, err := url.Parse(v.Url)
 		if err != nil {

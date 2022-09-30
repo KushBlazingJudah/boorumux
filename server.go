@@ -43,7 +43,7 @@ type Server struct {
 	// Blacklist is a list of blacklisted tags.
 	// Posts containing these tags will not be shown in the page view, however
 	// if explicitly requested they will be presented.
-	Blacklist []string
+	Blacklist map[string]struct{}
 
 	boorus []string
 
@@ -155,7 +155,15 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	// This looks weird but trust me on this; it's simply an in-place filter.
 	n := 0
 	for _, v := range data {
-		if !mutual(v.Tags, s.Blacklist) {
+		fine := true
+		for _, t := range v.Tags {
+			if _, ok := s.Blacklist[t]; ok {
+				fine = false
+				break
+			}
+		}
+
+		if fine {
 			data[n] = v
 			n++
 		}
