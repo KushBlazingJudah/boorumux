@@ -2,6 +2,13 @@
 {{template "sidebar.html" .}}
 <div id="container">
 	<div id="inner">
+		{{if .post.Original.IsVideo}}
+		<video id="feature" controls>
+			<source src="/{{$booru}}?proxy={{.post.Original.Href}}" type="{{.post.Original.MIME}}">
+			Your browser does not support the video tag.
+		</video>
+		{{else}}
 		<img src="/{{$booru}}?proxy={{.post.Original.Href}}" id="feature">
+		{{end}}
 	</div>
 </div>

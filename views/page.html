@@ -1,11 +1,10 @@
 {{$booru := .booru}}
+{{$q := .q}}
 {{template "sidebar.html" .}}
-<div id="container">
-	<div id="inner">
-		{{range .posts}}
-		<a href="/{{$booru}}?post={{.Id}}" class="post" title="{{.Tags}}" data-full="/{{$booru}}?proxy={{.Original.Href}}">
-			<img src="/{{$booru}}?proxy={{.Thumbnail.Href}}"></img>
-		</a>
-		{{end}}
-	</div>
+<div id="thumbcontainer">
+	{{range .posts}}
+	<a href="/{{$booru}}?post={{.Id}}&q={{$q}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{.Tags}}" data-full="/{{$booru}}?proxy={{.Original.Href}}">
+		<img src="/{{$booru}}?proxy={{.Thumbnail.Href}}"></img>
+	</a>
+	{{end}}
 </div>

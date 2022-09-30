@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -99,6 +100,11 @@ type HTTPError struct {
 
 	// Code is the status code returned by the server.
 	Code int
+}
+
+// IsVideo determines if this image is a video by looking at its MIME type.
+func (i Image) IsVideo() bool {
+	return strings.HasPrefix(i.MIME, "video/")
 }
 
 func (h HTTPError) Error() string {

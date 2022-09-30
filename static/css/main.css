@@ -48,11 +48,35 @@ h1,h2,h3 { margin-bottom: 0.1em; }
 	overflow: auto;
 }
 
-#container {
+#container, #thumbcontainer {
 	margin-left: 19rem;
 	padding: 1em;
 	max-width: 100%;
 }
+
+#thumbcontainer {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+#thumbcontainer .post {
+	display: flex;
+	margin-top: 20px;
+	align-items: center;
+	justify-content: center;
+
+	width: 195px;
+	height: 185px;
+}
+
+#thumbcontainer .post img {
+	max-width: 100%;
+	max-height: 100%;
+	box-sizing: border-box;
+}
+
+#thumbcontainer .post.video img { border: 4px var(--color04) solid; }
+#thumbcontainer .post.gif img { border: 4px var(--color05) solid; }
 
 #inner {
 	width: 75%;
@@ -89,6 +113,6 @@ ul#taglist li a:hover, ul#boorulist li a:hover {
 .remove { color: var(--color01); }
 .active { background: var(--background); }
 
-#feature { width: 100%; }
+#feature { width: 100%; max-height: 100%; }
 .info b { width: 100%; display: block; }
 .info + .info { border-top: 1px solid var(--foreground); }
