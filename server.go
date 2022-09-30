@@ -231,7 +231,6 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata["tags"] = pageTags
 	tmpldata["posts"] = data
 	tmpldata["page"] = page
-	tmpldata["q"] = r.URL.Query().Get("q")
 
 	templates.Funcs(template.FuncMap{"embed": func() error {
 		return templates.Lookup("page.html").Execute(w, tmpldata)
@@ -260,7 +259,6 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata["boorus"] = s.boorus
 	tmpldata["tags"] = data.Tags
 	tmpldata["post"] = data
-	tmpldata["q"] = r.URL.Query().Get("q")
 
 	templates.Funcs(template.FuncMap{"embed": func() error {
 		return templates.Lookup("post.html").Execute(w, tmpldata)
