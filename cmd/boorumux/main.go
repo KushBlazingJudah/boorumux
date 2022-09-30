@@ -11,6 +11,7 @@ import (
 
 	"github.com/KushBlazingJudah/boorumux"
 	"github.com/KushBlazingJudah/boorumux/booru"
+	"github.com/KushBlazingJudah/boorumux/filter"
 )
 
 var (
@@ -23,7 +24,7 @@ type cfg struct {
 	Sources map[string]struct {
 		Type, Url string
 	}
-	Blacklist []string
+	Blacklist interface{}
 }
 
 func main() {
@@ -52,13 +53,7 @@ func main() {
 	}
 
 	bm.Boorus = map[string]booru.API{}
-
-	for _, v := range c.Blacklist {
-		if bm.Blacklist == nil {
-			bm.Blacklist = make(map[string]struct{})
-		}
-		bm.Blacklist[v] = struct{}{}
-	}
+	bm.Blacklist = filter.ParseMany(c.Blacklist)
 
 	for k, v := range c.Sources {
 		u, err := url.Parse(v.Url)

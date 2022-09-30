@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/KushBlazingJudah/boorumux/booru"
+	"github.com/KushBlazingJudah/boorumux/filter"
 )
 
 var templates *template.Template
@@ -57,7 +58,7 @@ type Server struct {
 	// Blacklist is a list of blacklisted tags.
 	// Posts containing these tags will not be shown in the page view, however
 	// if explicitly requested they will be presented.
-	Blacklist map[string]struct{}
+	Blacklist []filter.Filter
 
 	boorus []string
 
@@ -178,8 +179,8 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	n := 0
 	for _, v := range data {
 		fine := true
-		for _, t := range v.Tags {
-			if _, ok := s.Blacklist[t]; ok {
+		for _, f := range s.Blacklist {
+			if f.Match(&v) {
 				fine = false
 				break
 			}
