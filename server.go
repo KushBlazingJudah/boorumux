@@ -22,6 +22,11 @@ var mapPool = sync.Pool{
 		return map[string]interface{}{}
 	},
 }
+var ssPool = sync.Pool{
+	New: func() any {
+		return new([]string)
+	},
+}
 
 type reqType uint
 
@@ -29,6 +34,10 @@ const (
 	reqPost reqType = iota
 	reqPage
 	reqProxy
+)
+
+const (
+	maxSidebarTags = 25
 )
 
 // Server holds the main configuration for Boorumux and doubles as a
@@ -184,19 +193,19 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	data = data[:n]
 
 	// Find all of the tags on this page
-	// To keep things simple, we're going to simply use a map[string]struct{}.
-	// This ensures that results are unique, we just need to convert it into a
-	// string slice.
-	tagmap := map[string]struct{}{}
+	ssptr := ssPool.Get().(*[]string)
+	defer ssPool.Put(ssptr)
+
+	ss := *ssptr
+	ss = ss[:0]
+
 	for _, p := range data {
-		for _, v := range p.Tags {
-			tagmap[v] = struct{}{}
-		}
+		ss = append(ss, p.Tags...)
 	}
 
-	pageTags := make([]string, 0, len(tagmap))
-	for k := range tagmap {
-		pageTags = append(pageTags, k)
+	pageTags := mostCommon(ss)
+	if len(pageTags) > maxSidebarTags {
+		pageTags = pageTags[:maxSidebarTags]
 	}
 
 	// Remove tags from pageTags
@@ -217,10 +226,6 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	for i, v := range tags {
 		tags[i] = strings.ReplaceAll(v, "_", " ")
 	}
-
-	// Sort it out
-	sort.Strings(pageTags)
-	sort.Strings(tags)
 
 	// Render it out
 	tmpldata := mapPool.Get().(map[string]interface{})
