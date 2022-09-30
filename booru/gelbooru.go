@@ -52,6 +52,8 @@ type gelbooruPost struct {
 	Width, Height int
 	PreviewWidth  int `json:"preview_width"`
 	PreviewHeight int `json:"preview_height"`
+
+	Rating string
 }
 
 type gelbooruResp struct {
@@ -84,6 +86,19 @@ func (dp gelbooruPost) toPost() Post {
 			Width:  dp.PreviewWidth,
 			Height: dp.PreviewHeight,
 		},
+	}
+
+	switch dp.Rating {
+	default:
+		fallthrough
+	case "general":
+		p.Rating = General
+	case "questionable":
+		p.Rating = Questionable
+	case "sensitive":
+		p.Rating = Sensitive
+	case "explicit":
+		p.Rating = Explicit
 	}
 
 	p.Created, _ = time.Parse(time.RubyDate, dp.Created)

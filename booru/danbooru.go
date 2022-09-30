@@ -51,12 +51,29 @@ type danbooruPost struct {
 	Height      int    `json:"image_height"`
 
 	Tags string `json:"tag_string"`
+
+	Rating string
 }
 
 // toPost converts the internal representation to an actual Post used by the
 // outer world.
 func (dp danbooruPost) toPost() Post {
 	// Luckily for us, there's a rather direct conversion.
+
+	var r Rating
+	switch dp.Rating {
+	default:
+		fallthrough
+	case "g":
+		r = General
+	case "q":
+		r = Questionable
+	case "s":
+		r = Sensitive
+	case "e":
+		r = Explicit
+	}
+
 	return Post{
 		Id:      dp.Id,
 		Score:   dp.Score,
@@ -64,6 +81,7 @@ func (dp danbooruPost) toPost() Post {
 		Created: dp.Created,
 		Updated: dp.Updated,
 		Tags:    strings.Split(dp.Tags, " "),
+		Rating:  r,
 		Original: Image{
 			Href:   dp.OriginalUrl,
 			MIME:   mime.TypeByExtension("." + dp.Ext), // mime asks we include the dot

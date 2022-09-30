@@ -13,6 +13,15 @@ var (
 	ErrNotFound = errors.New("booru: not found")
 )
 
+type Rating int
+
+const (
+	General Rating = iota
+	Questionable
+	Sensitive
+	Explicit
+)
+
 // API is an interface that neatly abstracts the hard parts of parsing and
 // mangling results from the actual booru's API into something easy to use and
 // comprehend.
@@ -90,6 +99,8 @@ type Post struct {
 	// Thumbnail is a thumbnail for this post.
 	// This is normally the "large" but not "original" size of an image.
 	Thumbnail Image
+
+	Rating Rating
 }
 
 // HTTPError represents a generic HTTP failure status code message using the
