@@ -2,16 +2,16 @@
 	/* Gruvbox light */
 	--background: #f9f5d7;
 	--foreground: #3c3836;
-	--color00:  #fdf4c1;
-	--color01:  #cc241d;
-	--color02:  #98971a;
-	--color03:  #d79921;
-	--color04:  #458588;
-	--color05:  #b16286;
-	--color06:  #689d6a;
-	--color07:  #7c6f64;
-	--color08:  #928374;
-	--color09:  #9d0006;
+	--color0:  #fdf4c1;
+	--color1:  #cc241d;
+	--color2:  #98971a;
+	--color3:  #d79921;
+	--color4:  #458588;
+	--color5:  #b16286;
+	--color6:  #689d6a;
+	--color7:  #7c6f64;
+	--color8:  #928374;
+	--color9:  #9d0006;
 	--color10:  #79740e;
 	--color11:  #b57614;
 	--color12:  #076678;
@@ -41,11 +41,20 @@ h1,h2,h3 { margin-bottom: 0.1em; }
 	height: 100vh;
 	box-sizing: border-box;
 
-	background: var(--color00);
+	background: var(--color0);
 	padding: 2em;
 
 	position: fixed;
 	overflow: auto;
+}
+
+#pages {
+	text-align: center;
+	font-size: 0.75em;
+}
+
+#pages a {
+	text-decoration: none;
 }
 
 #container, #thumbcontainer {
@@ -75,8 +84,8 @@ h1,h2,h3 { margin-bottom: 0.1em; }
 	box-sizing: border-box;
 }
 
-#thumbcontainer .post.video img { border: 4px var(--color04) solid; }
-#thumbcontainer .post.gif img { border: 4px var(--color05) solid; }
+#thumbcontainer .post.video img { border: 4px var(--color4) solid; }
+#thumbcontainer .post.gif img { border: 4px var(--color5) solid; }
 
 #inner {
 	width: 75%;
@@ -109,8 +118,8 @@ ul#taglist li a:hover, ul#boorulist li a:hover {
 
 #q { box-sizing: border-box; width: 100%; }
 
-.add { color: var(--color02); }
-.remove { color: var(--color01); }
+.add { color: var(--color2); }
+.remove { color: var(--color1); }
 .active { background: var(--background); }
 
 #feature { width: 100%; max-height: 100%; }

@@ -3,7 +3,7 @@
 {{template "sidebar.html" .}}
 <div id="thumbcontainer">
 	{{range .posts}}
-	<a href="/{{$booru}}?post={{.Id}}&q={{$q}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{.Tags}}" data-full="/{{$booru}}?proxy={{.Original.Href}}">
+	<a href="/{{$booru}}?post={{.Id}}&q={{$q}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{.Tags}}">
 		<img src="/{{$booru}}?proxy={{.Thumbnail.Href}}"></img>
 	</a>
 	{{end}}

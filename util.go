@@ -2,7 +2,9 @@ package boorumux
 
 import (
 	"fmt"
+	"html/template"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -69,4 +71,22 @@ func mostCommon[T any](list []T) []T {
 	})
 
 	return o
+}
+
+func buildPageBlock(base string, current int) template.HTML {
+	// TODO: This function really sucks; list out a couple pages, in a form
+	// similar to this: 1 2 ... 5 [6] 7 ... 12
+
+	sb := strings.Builder{}
+	sb.WriteString(`<div id="pages">`)
+	if current != 0 {
+		fmt.Fprintf(&sb, ` <a href="%s">0</a>`, base)
+		if current-1 > 0 {
+			fmt.Fprintf(&sb, ` ... <a href="%s&page=%d">%d</a> `, base, current-1, current-1)
+		}
+		fmt.Fprintf(&sb, ` <b>%d</b> `, current)
+	}
+	fmt.Fprintf(&sb, ` <a href="%s&page=%d">next</a>`, base, current+1)
+	sb.WriteString(`</div>`)
+	return template.HTML(sb.String())
 }

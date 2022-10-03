@@ -71,6 +71,7 @@ func init() {
 		"embed":      func() error { panic("wtf") },
 		"unhumantag": func(s string) string { return strings.ReplaceAll(s, " ", "_") },
 		"size":       humanSize,
+		"pages":      buildPageBlock,
 	}).ParseGlob("./views/*.html"))
 }
 
