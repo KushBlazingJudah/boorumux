@@ -1,13 +1,13 @@
 {{$booru := .booru}}
-<div id="sidebar">
-	<h1>Boorumux</h1>
+<div id="header">
+	<span class="title">Boorumux</span>
 	<form action="/{{$booru}}" id="search" method="get">
 		<input type="search" id="q" name="q" placeholder="rating:safe touhou..."{{if .q}} value="{{.q}}"{{end}}>
 	</form>
-
+</div>
+<div id="sidebar">
 	{{if not .post}}
 	{{$page := or .page 0}}
-	<hr>
 	{{pages (printf "/%s?q=%s" .booru .q) $page}}
 	<hr>
 	{{end}}
