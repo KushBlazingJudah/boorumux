@@ -65,7 +65,7 @@ type gelbooruResp struct {
 
 // toPost converts the internal representation to an actual Post used by the
 // outer world.
-func (dp gelbooruPost) toPost() Post {
+func (dp gelbooruPost) toPost(d *Gelbooru) Post {
 	// Some things are 1:1 but others need to be parsed
 	p := Post{
 		Id:     dp.Id,
@@ -86,6 +86,7 @@ func (dp gelbooruPost) toPost() Post {
 			Width:  dp.PreviewWidth,
 			Height: dp.PreviewHeight,
 		},
+		Origin: d,
 	}
 
 	switch dp.Rating {
@@ -154,7 +155,7 @@ func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, er
 	// Convert
 	out := make([]Post, len(rawResp.Post))
 	for i, v := range rawResp.Post {
-		out[i] = v.toPost()
+		out[i] = v.toPost(d)
 	}
 
 	return out, int(math.Ceil(float64(rawResp.A.Total-rawResp.A.Offset) / float64(rawResp.A.Limit))), nil
@@ -202,6 +203,6 @@ func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
 		return nil, fmt.Errorf("gelbooru: not found")
 	}
 
-	out := rawResp.Post[0].toPost()
+	out := rawResp.Post[0].toPost(d)
 	return &out, nil
 }

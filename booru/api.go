@@ -101,6 +101,7 @@ type Post struct {
 	Thumbnail Image
 
 	Rating Rating
+	Origin API
 }
 
 // HTTPError represents a generic HTTP failure status code message using the

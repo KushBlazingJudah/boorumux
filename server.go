@@ -68,7 +68,8 @@ type Server struct {
 func init() {
 	// Compile all of the templates.
 	templates = template.Must(template.New("").Funcs(template.FuncMap{
-		"embed":      func() error { panic("wtf") },
+		"embed":      func() error { panic("embed called too early") },
+		"booruId":    func() error { panic("booruId called too early") },
 		"unhumantag": func(s string) string { return strings.ReplaceAll(s, " ", "_") },
 		"size":       humanSize,
 		"pages":      buildPageBlock,
@@ -241,9 +242,19 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata["page"] = page
 	tmpldata["q"] = r.URL.Query().Get("q")
 
-	templates.Funcs(template.FuncMap{"embed": func() error {
-		return templates.Lookup("page.html").Execute(w, tmpldata)
-	}}).ExecuteTemplate(w, "main.html", tmpldata)
+	templates.Funcs(template.FuncMap{
+		"embed": func() error {
+			return templates.Lookup("page.html").Execute(w, tmpldata)
+		},
+		"booruId": func(b booru.API) string {
+			for k, v := range s.Boorus {
+				if v == b {
+					return k
+				}
+			}
+			return ""
+		},
+	}).ExecuteTemplate(w, "main.html", tmpldata)
 }
 
 func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru string, id int) {

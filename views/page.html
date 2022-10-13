@@ -1,8 +1,8 @@
-{{$booru := .booru}}
 {{$q := .q}}
 {{template "sidebar.html" .}}
 <div id="thumbcontainer">
 	{{range .posts}}
+	{{$booru := booruId .Origin}}
 	<a href="/{{$booru}}?post={{.Id}}&q={{$q}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{.Tags}}">
 		<img src="/{{$booru}}?proxy={{.Thumbnail.Href}}"></img>
 	</a>

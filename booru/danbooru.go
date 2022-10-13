@@ -57,7 +57,7 @@ type danbooruPost struct {
 
 // toPost converts the internal representation to an actual Post used by the
 // outer world.
-func (dp danbooruPost) toPost() Post {
+func (dp danbooruPost) toPost(d *Danbooru) Post {
 	// Luckily for us, there's a rather direct conversion.
 
 	var r Rating
@@ -94,6 +94,7 @@ func (dp danbooruPost) toPost() Post {
 			MIME: "image/jpeg", // assumption
 			Size: 0,            // we are never told
 		},
+		Origin: d,
 	}
 }
 
@@ -139,7 +140,7 @@ func (d *Danbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, er
 	// Convert
 	out := make([]Post, len(rawList))
 	for i, v := range rawList {
-		out[i] = v.toPost()
+		out[i] = v.toPost(d)
 	}
 
 	return out, -1, nil
@@ -175,6 +176,6 @@ func (d *Danbooru) Post(ctx context.Context, id int) (*Post, error) {
 		return nil, err
 	}
 
-	out := rawPost.toPost()
+	out := rawPost.toPost(d)
 	return &out, nil
 }
