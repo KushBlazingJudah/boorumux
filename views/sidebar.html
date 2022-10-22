@@ -50,7 +50,7 @@
 	{{if .post.Source}}
 	<div class="info">
 		<b>Source</b>
-		<a href="{{.post.Source}}">{{.post.Source}}</a>
+		{{if isUrl .post.Source}}<a href="{{.post.Source}}">{{prettyUrl .post.Source}}</a>{{else}}<span>{{.post.Source}}</span>{{end}}
 	</div>
 	{{end}}
 	{{end}}

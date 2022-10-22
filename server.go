@@ -73,6 +73,8 @@ func init() {
 		"unhumantag": func(s string) string { return strings.ReplaceAll(s, " ", "_") },
 		"size":       humanSize,
 		"pages":      buildPageBlock,
+		"isUrl":      schemaRegexp.MatchString,
+		"prettyUrl":  prettyUrl,
 	}).ParseGlob("./views/*.html"))
 }
 

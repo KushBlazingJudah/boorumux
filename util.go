@@ -3,6 +3,7 @@ package boorumux
 import (
 	"fmt"
 	"html/template"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -18,6 +19,10 @@ var counterPool = sync.Pool{
 		return counter{}
 	},
 }
+
+var (
+	schemaRegexp = regexp.MustCompile("^https?://")
+)
 
 func (c counter) count(a interface{}) {
 	n, ok := c[a]
@@ -89,4 +94,8 @@ func buildPageBlock(base string, current int) template.HTML {
 	fmt.Fprintf(&sb, ` <a href="%s&page=%d">next</a>`, base, current+1)
 	sb.WriteString(`</div>`)
 	return template.HTML(sb.String())
+}
+
+func prettyUrl(u string) string {
+	return schemaRegexp.ReplaceAllString(u, "")
 }
