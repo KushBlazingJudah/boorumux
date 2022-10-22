@@ -8,7 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"path/filepath"
+	"path"
 	"strings"
 	"time"
 )
@@ -74,8 +74,8 @@ func (dp gelbooruPost) toPost(d *Gelbooru) Post {
 		Tags:   strings.Split(dp.Tags, " "),
 		Original: Image{
 			Href:   dp.OriginalUrl,
-			MIME:   mime.TypeByExtension(filepath.Ext(dp.OriginalUrl)), // mime asks we include the dot
-			Size:   0,                                                  // never told
+			MIME:   mime.TypeByExtension(path.Ext(dp.OriginalUrl)), // mime asks we include the dot
+			Size:   0,                                              // never told
 			Width:  dp.Width,
 			Height: dp.Height,
 		},
@@ -117,7 +117,7 @@ func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, er
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
-	u.Path = filepath.Join(u.Path, "/index.php")
+	u.Path = path.Join(u.Path, "/index.php")
 	uq := u.Query()
 	uq.Set("page", "dapi")
 	uq.Set("s", "post")
@@ -165,7 +165,7 @@ func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
-	u.Path = filepath.Join(u.Path, "/index.php")
+	u.Path = path.Join(u.Path, "/index.php")
 	uq := u.Query()
 	uq.Set("page", "dapi")
 	uq.Set("s", "post")
