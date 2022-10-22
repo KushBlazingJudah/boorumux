@@ -19,11 +19,14 @@ var (
 	Listen = flag.String("addr", "localhost:8080", "Listening address of the HTTP server.")
 )
 
+type bcfg struct {
+	Type, Url string
+	Combine   []string
+}
+
 type cfg struct {
-	Proxy   string
-	Sources map[string]struct {
-		Type, Url string
-	}
+	Proxy     string
+	Sources   map[string]bcfg
 	Blacklist interface{}
 }
 
@@ -55,6 +58,8 @@ func main() {
 	bm.Boorus = map[string]booru.API{}
 	bm.Blacklist = filter.ParseMany(c.Blacklist)
 
+	muxes := map[string]bcfg{}
+
 	for k, v := range c.Sources {
 		u, err := url.Parse(v.Url)
 		if err != nil {
@@ -72,9 +77,27 @@ func main() {
 				URL:        u,
 				HttpClient: ht,
 			}
+		case "mux": // Dealt with later
+			muxes[k] = v
 		default:
 			panic("unknown source")
 		}
+	}
+
+	// Setup muxes
+	for k, v := range muxes {
+		m := boorumux.Mux{}
+
+		// Check to see if all boorus are available
+		for _, vv := range v.Combine {
+			if b, ok := bm.Boorus[vv]; ok {
+				m.Boorus = append(m.Boorus, b)
+			} else {
+				log.Fatal("for mux \"%s\": booru \"%s\" not found", k, vv)
+			}
+		}
+
+		bm.Boorus[k] = &m
 	}
 
 	mux := http.NewServeMux()

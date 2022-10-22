@@ -1,4 +1,5 @@
 {{$booru := .booru}}
+{{$q := .q}}
 <div id="header">
 	<span class="title">Boorumux</span>
 	<form action="/{{$booru}}" id="search" method="get">
@@ -14,10 +15,10 @@
 
 	<h3>Boorus</h3>
 	<ul id="boorulist">
-		<li class="booru active"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="booruname">{{$booru}}</a></li>
+		<li class="booru active"><a class="booruname">{{$booru}}</a></li>
 		{{range .boorus}}
 		{{if ne . $booru}}
-		<li class="booru"><a class="add" href="#">+</a> <a class="remove" href="#">-</a> <a class="booruname" href="/{{.}}">{{.}}</a></li>
+		<li class="booru"><a class="booruname" href="/{{.}}{{if $q}}?q={{$q}}{{end}}">{{.}}</a></li>
 		{{end}}
 		{{end}}
 	</ul>
