@@ -75,6 +75,7 @@ func init() {
 		"pages":      buildPageBlock,
 		"isUrl":      schemaRegexp.MatchString,
 		"prettyUrl":  prettyUrl,
+		"concat":     func(s []string, c string) string { return strings.Join(s, c) },
 	}).ParseGlob("./views/*.html"))
 }
 

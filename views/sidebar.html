@@ -61,7 +61,7 @@
 		<li class="tag active"><a class="add" href="#">|</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname">{{.}}</a></li>
 		{{end}}
 		{{range .tags}}
-		<li class="tag"><a class="add" href="#" onclick="return addTag('{{.}}')">+</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname" href="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}?q={{unhumantag .}}">{{.}}</a></li>
+		<li class="tag"><a class="add" href="#" onclick="return addTag('{{.}}')">+</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname" data-tag="{{unhumantag .}}" href="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}?q={{unhumantag .}}">{{.}}</a></li>
 		{{end}}
 	</ul>
 </div>

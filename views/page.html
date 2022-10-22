@@ -4,8 +4,10 @@
 <div id="thumbcontainer">
 	{{range .posts}}
 	{{$pbooru := booruId .Origin}}
-	<a href="/{{$pbooru}}?post={{.Id}}{{if $q}}&q={{$q}}{{end}}{{if ne $booru $pbooru}}&from={{$booru}}{{end}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{.Tags}}">
+	<a href="/{{$pbooru}}?post={{.Id}}{{if $q}}&q={{$q}}{{end}}{{if ne $booru $pbooru}}&from={{$booru}}{{end}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{concat .Tags " "}}">
 		<img src="/{{$pbooru}}?proxy={{.Thumbnail.Href}}"></img>
 	</a>
 	{{end}}
 </div>
+
+<script src="/js/taghover.js"></script>
