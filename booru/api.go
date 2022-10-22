@@ -114,6 +114,21 @@ type HTTPError struct {
 	Code int
 }
 
+func (r Rating) String() string {
+	switch r {
+	case General:
+		return "General"
+	case Questionable:
+		return "Questionable"
+	case Sensitive:
+		return "Sensitive"
+	case Explicit:
+		return "Explicit"
+	}
+
+	return "Unknown"
+}
+
 // IsVideo determines if this image is a video by looking at its MIME type.
 func (i Image) IsVideo() bool {
 	return strings.HasPrefix(i.MIME, "video/")
