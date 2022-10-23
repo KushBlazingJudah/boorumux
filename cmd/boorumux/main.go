@@ -21,8 +21,11 @@ var (
 	Listen = flag.String("addr", "localhost:8080", "Listening address of the HTTP server.")
 )
 
+var proxyFn func(*http.Request) (*url.URL, error) = nil
+
 type bcfg struct {
 	Type    string   `json:"type"`
+	Proxy   string   `json:"proxy,omitempty"`
 	Url     string   `json:"url,omitempty"`
 	Combine []string `json:"combine,omitempty"`
 }
@@ -72,6 +75,46 @@ func mkDefaults() {
 	}
 }
 
+func genBooru(name string, b bcfg, c cfg) booru.API {
+	ht := &http.Client{}
+
+	if b.Proxy != "" {
+		pu, err := url.Parse(b.Proxy)
+		if err != nil {
+			log.Fatalf("error parsing proxy URL for booru \"%s\": %v", name, err)
+		}
+
+		log.Printf("booru \"%s\" proxy is %s", name, b.Proxy)
+		ht.Transport = &http.Transport{Proxy: http.ProxyURL(pu)}
+	} else {
+		log.Printf("booru \"%s\" is using default proxy", name)
+		ht.Transport = &http.Transport{Proxy: proxyFn}
+	}
+
+	u, err := url.Parse(b.Url)
+	if err != nil {
+		log.Fatalf("failed parsing url for booru \"%s\": %v", name, err)
+	}
+
+	var B booru.API
+	switch b.Type {
+	case "danbooru":
+		B = &booru.Danbooru{
+			URL:        u,
+			HttpClient: ht,
+		}
+	case "gelbooru":
+		B = &booru.Gelbooru{
+			URL:        u,
+			HttpClient: ht,
+		}
+	default:
+		panic("unknown source")
+	}
+
+	return B
+}
+
 func main() {
 	flag.Parse()
 
@@ -99,11 +142,15 @@ func main() {
 	}
 
 	// TODO: Config
-	pu, _ := url.Parse("socks5://127.0.0.1:9050")
-	ht := &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(pu),
-		},
+	var pu *url.URL
+	if c.Proxy != "" {
+		pu, err = url.Parse(c.Proxy)
+		if err != nil {
+			log.Fatalf("error parsing proxy URL: %v", err)
+		}
+
+		log.Printf("Using global proxy %s", c.Proxy)
+		proxyFn = http.ProxyURL(pu)
 	}
 
 	bm.Boorus = map[string]booru.API{}
@@ -112,27 +159,12 @@ func main() {
 	muxes := map[string]bcfg{}
 
 	for k, v := range c.Sources {
-		u, err := url.Parse(v.Url)
-		if err != nil {
-			log.Fatalf("failed parsing url for %s: %v", k, err)
+		if v.Type == "mux" {
+			muxes[k] = v
+			continue
 		}
 
-		switch v.Type {
-		case "danbooru":
-			bm.Boorus[k] = &booru.Danbooru{
-				URL:        u,
-				HttpClient: ht,
-			}
-		case "gelbooru":
-			bm.Boorus[k] = &booru.Gelbooru{
-				URL:        u,
-				HttpClient: ht,
-			}
-		case "mux": // Dealt with later
-			muxes[k] = v
-		default:
-			panic("unknown source")
-		}
+		bm.Boorus[k] = genBooru(k, v, c)
 	}
 
 	// Setup muxes
