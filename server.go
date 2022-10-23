@@ -76,6 +76,7 @@ func init() {
 		"isUrl":      schemaRegexp.MatchString,
 		"prettyUrl":  prettyUrl,
 		"concat":     func(s []string, c string) string { return strings.Join(s, c) },
+		"ver":        func() string { return "0.0.0" }, // TODO
 	}).ParseGlob("./views/*.html"))
 }
 
@@ -245,6 +246,12 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata["page"] = page
 	tmpldata["q"] = r.URL.Query().Get("q")
 
+	if tmpldata["q"] == "" {
+		tmpldata["title"] = fmt.Sprintf("%s #%d - Boorumux", targetBooru, page)
+	} else {
+		tmpldata["title"] = fmt.Sprintf("%s #%d - Boorumux", tmpldata["q"], page)
+	}
+
 	templates.Funcs(template.FuncMap{
 		"embed": func() error {
 			return templates.Lookup("page.html").Execute(w, tmpldata)
@@ -278,6 +285,7 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata := mapPool.Get().(map[string]interface{})
 	defer checkin(tmpldata)
 
+	tmpldata["title"] = fmt.Sprintf("%s on %s - Boorumux", strings.Join(data.Tags, " "), targetBooru)
 	tmpldata["booru"] = targetBooru
 	tmpldata["boorus"] = s.boorus
 	tmpldata["tags"] = data.Tags

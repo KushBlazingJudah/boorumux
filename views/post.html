@@ -1,6 +1,10 @@
 {{$booru := .booru}}
-{{template "sidebar.html" .}}
+
+{{template "header.html" .}}
+
 <div id="container">
+	{{template "sidebar.html" .}}
+
 	<div id="inner">
 		{{if .post.Original.IsVideo}}
 		<video id="feature" controls>
@@ -12,3 +16,5 @@
 		{{end}}
 	</div>
 </div>
+
+{{template "footer.html"}}

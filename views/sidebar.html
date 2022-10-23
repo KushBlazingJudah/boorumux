@@ -1,12 +1,6 @@
 {{$booru := .booru}}
 {{$from := .from}}
 {{$q := .q}}
-<div id="header">
-	<span class="title">Boorumux</span>
-	<form action="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}" id="search" method="get">
-		<input type="search" id="q" name="q" placeholder="rating:safe touhou..."{{if .q}} value="{{.q}}"{{end}}>
-	</form>
-</div>
 <div id="sidebar">
 	{{if not .post}}
 	{{$page := or .page 0}}

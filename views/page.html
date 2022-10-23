@@ -1,13 +1,20 @@
 {{$q := .q}}
 {{$booru := .booru}}
-{{template "sidebar.html" .}}
-<div id="thumbcontainer">
-	{{range .posts}}
-	{{$pbooru := booruId .Origin}}
-	<a href="/{{$pbooru}}?post={{.Id}}{{if $q}}&q={{$q}}{{end}}{{if ne $booru $pbooru}}&from={{$booru}}{{end}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{concat .Tags " "}}">
-		<img src="/{{$pbooru}}?proxy={{.Thumbnail.Href}}"></img>
-	</a>
-	{{end}}
+
+{{template "header.html" .}}
+
+<div id="container">
+	{{template "sidebar.html" .}}
+	<div id="thumbs">
+		{{range .posts}}
+		{{$pbooru := booruId .Origin}}
+		<a href="/{{$pbooru}}?post={{.Id}}{{if $q}}&q={{$q}}{{end}}{{if ne $booru $pbooru}}&from={{$booru}}{{end}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{concat .Tags " "}}">
+			<img src="/{{$pbooru}}?proxy={{.Thumbnail.Href}}"></img>
+		</a>
+		{{end}}
+	</div>
 </div>
+
+{{template "footer.html"}}
 
 <script src="/js/taghover.js"></script>
