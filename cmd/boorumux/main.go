@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
+	"io/fs"
 	"log"
 	"net/http"
 	"net/url"
@@ -15,19 +17,59 @@ import (
 )
 
 var (
-	Prefix = flag.String("prefix", "", "Root path of the server.")
+	Prefix = flag.String("prefix", "", "Root path of the server. (unimplemented)")
 	Listen = flag.String("addr", "localhost:8080", "Listening address of the HTTP server.")
 )
 
 type bcfg struct {
-	Type, Url string
-	Combine   []string
+	Type    string   `json:"type"`
+	Url     string   `json:"url,omitempty"`
+	Combine []string `json:"combine,omitempty"`
 }
 
 type cfg struct {
-	Proxy     string
-	Sources   map[string]bcfg
-	Blacklist interface{}
+	Proxy     string          `json:"proxy"`
+	Sources   map[string]bcfg `json:"sources"`
+	Blacklist interface{}     `json:"blacklist"`
+}
+
+func mkDefaults() {
+	log.Printf("Creating ./boorumux.json with defaults")
+
+	d := cfg{
+		Sources: map[string]bcfg{
+			"gelbooru": bcfg{
+				Type: "gelbooru",
+				Url:  "https://gelbooru.com",
+			},
+			"safebooru": bcfg{
+				Type: "danbooru",
+				Url:  "https://safebooru.donmai.us",
+			},
+			"mux": bcfg{
+				Type:    "mux",
+				Combine: []string{"gelbooru", "safebooru"},
+			},
+		},
+		Blacklist: []string{
+			// Safe selection of tags most may not want to see
+			"guro",
+			"scat",
+			"furry",
+			"loli",
+		},
+	}
+
+	h, err := os.Create("./boorumux.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer h.Close()
+
+	b, _ := json.MarshalIndent(d, "", "\t")
+	if _, err := h.Write(b); err != nil {
+		log.Fatalf("failed saving config: %v", err)
+	}
 }
 
 func main() {
@@ -36,9 +78,18 @@ func main() {
 	bm := &boorumux.Server{
 		Prefix: *Prefix,
 	}
+
 	f, err := os.Open("./boorumux.json")
 	if err != nil {
-		log.Fatalf("failed opening config: %v", err)
+		if errors.Is(err, fs.ErrNotExist) {
+			mkDefaults()
+			f, err = os.Open("./boorumux.json")
+			if err != nil {
+				log.Fatalf("failed opening config: %v", err)
+			}
+		} else {
+			log.Fatalf("failed opening config: %v", err)
+		}
 	}
 	defer f.Close()
 
