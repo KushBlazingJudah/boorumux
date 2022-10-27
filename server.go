@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"regexp"
 	"sort"
@@ -288,6 +289,20 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 }
 
 func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBooru string, target string) {
+	defer func() {
+		// XXX: There's this really annoying bug and I'm not sure if it's our
+		// fault or Go's, but essentially under some circumstances io.Copy will
+		// panic with a slice out of bounds error, something along those lines.
+		// I forget.
+		//
+		// Point is, I don't know what actually causes the problem.
+		// If you are a brave soul, remove this deferred function and trigger
+		// it somehow, because I also don't know what triggers it.
+		if v := recover(); v != nil {
+			log.Printf("proxyHandler panic: %v", v)
+		}
+	}()
+
 	// TODO: Trusted domains
 	req, err := http.NewRequest("GET", target, nil)
 	if err != nil {
@@ -302,6 +317,8 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBoor
 
 	w.Header().Set("Content-Length", fmt.Sprint(res.ContentLength))
 	w.Header().Set("Content-Type", res.Header.Get("Content-Type"))
+
+	// This is where the aforementioned bug occurs.
 	if _, err := io.Copy(w, res.Body); err != nil {
 		panic(err)
 	}
