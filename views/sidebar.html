@@ -52,10 +52,10 @@
 	<h3>Tags</h3>
 	<ul id="taglist">
 		{{range .activeTags}}
-		<li class="tag active"><a class="add" href="#">|</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname">{{.}}</a></li>
+		<li class="tag active"><a class="add" href="#">|</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname">{{humantag .}}</a></li>
 		{{end}}
 		{{range .tags}}
-		<li class="tag"><a class="add" href="#" onclick="return addTag('{{.}}')">+</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname" data-tag="{{unhumantag .}}" href="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}?q={{unhumantag .}}">{{.}}</a></li>
+		<li class="tag"><a class="add" href="#" onclick="return addTag('{{.}}')">+</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname" data-tag="{{.}}" href="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}?q={{.}}">{{humantag .}}</a></li>
 		{{end}}
 	</ul>
 </div>

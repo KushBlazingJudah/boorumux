@@ -68,15 +68,15 @@ type Server struct {
 func init() {
 	// Compile all of the templates.
 	templates = template.Must(template.New("").Funcs(template.FuncMap{
-		"embed":      func() error { panic("embed called too early") },
-		"booruId":    func() error { panic("booruId called too early") },
-		"unhumantag": func(s string) string { return strings.ReplaceAll(s, " ", "_") },
-		"size":       humanSize,
-		"pages":      buildPageBlock,
-		"isUrl":      schemaRegexp.MatchString,
-		"prettyUrl":  prettyUrl,
-		"concat":     func(s []string, c string) string { return strings.Join(s, c) },
-		"ver":        func() string { return "0.0.0" }, // TODO
+		"embed":     func() error { panic("embed called too early") },
+		"booruId":   func() error { panic("booruId called too early") },
+		"humantag":  func(s string) string { return strings.ReplaceAll(s, "_", " ") },
+		"size":      humanSize,
+		"pages":     buildPageBlock,
+		"isUrl":     schemaRegexp.MatchString,
+		"prettyUrl": prettyUrl,
+		"concat":    func(s []string, c string) string { return strings.Join(s, c) },
+		"ver":       func() string { return "0.0.0" }, // TODO
 	}).ParseGlob("./views/*.html"))
 }
 
@@ -226,14 +226,6 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 		}
 	}
 
-	// Make things look nicer
-	for i, v := range pageTags {
-		pageTags[i] = strings.ReplaceAll(v, "_", " ")
-	}
-	for i, v := range tags {
-		tags[i] = strings.ReplaceAll(v, "_", " ")
-	}
-
 	// Render it out
 	tmpldata := mapPool.Get().(map[string]interface{})
 	defer checkin(tmpldata)
@@ -271,11 +263,6 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	data, err := s.Boorus[targetBooru].Post(context.TODO(), id)
 	if err != nil {
 		panic(err)
-	}
-
-	// Make tags look nicer
-	for i, v := range data.Tags {
-		data.Tags[i] = strings.ReplaceAll(v, "_", " ")
 	}
 
 	// Sort it out

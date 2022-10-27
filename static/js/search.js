@@ -1,6 +1,6 @@
 function addTag(name) {
-	let tags = document.getElementById("q").value.split(" ")
-	tags.push(name.replaceAll(" ", "-"))
+	let tags = document.getElementById("q").value.split(" ").filter((e)=>e!=name)
+	tags.push(name)
 	document.getElementById("q").value = tags.join(" ")
 }
 
