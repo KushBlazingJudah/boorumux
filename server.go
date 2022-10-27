@@ -207,23 +207,25 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	ss = ss[:0]
 
 	for _, p := range data {
-		ss = append(ss, p.Tags...)
+		for _, v := range p.Tags {
+			ok := true
+
+			for _, k := range tags {
+				if v == k {
+					ok = false
+					break
+				}
+			}
+
+			if ok {
+				ss = append(ss, v)
+			}
+		}
 	}
 
 	pageTags := mostCommon(ss)
 	if len(pageTags) > maxSidebarTags {
 		pageTags = pageTags[:maxSidebarTags]
-	}
-
-	// Remove tags from pageTags
-	for _, v := range tags {
-		for i, x := range pageTags {
-			if x == v {
-				pageTags[i] = pageTags[len(pageTags)-1]
-				pageTags = pageTags[:len(pageTags)-1]
-				break
-			}
-		}
 	}
 
 	// Render it out

@@ -55,7 +55,7 @@ func humanSize(b int) string {
 }
 
 // mostCommon returns the most common items in a list.
-func mostCommon[T any](list []T) []T {
+func mostCommon(list []string) []string {
 	c := counterPool.Get().(counter)
 
 	// defers are LIFO; this resets it first and then checks it into the pool
@@ -66,14 +66,20 @@ func mostCommon[T any](list []T) []T {
 		c.count(v)
 	}
 
-	o := make([]T, 0, len(c))
+	o := make([]string, 0, len(c))
 	for k := range c {
-		o = append(o, k.(T))
+		o = append(o, k.(string))
 	}
 
+	sort.Strings(o)
+
 	sort.Slice(o, func(i, j int) bool {
-		return c[i] < c[j]
+		return c[o[i]] < c[o[j]]
 	})
+
+	for i, j := 0, len(o)-1; i < j; i, j = i+1, j-1 {
+		o[i], o[j] = o[j], o[i]
+	}
 
 	return o
 }
