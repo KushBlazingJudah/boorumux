@@ -1,7 +1,6 @@
 package boorumux
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -35,7 +34,7 @@ func init() {
 		"isUrl":     schemaRegexp.MatchString,
 		"prettyUrl": prettyUrl,
 		"concat":    func(s []string, c string) string { return strings.Join(s, c) },
-		"ver":       func() string { return verString }, // TODO
+		"ver":       func() string { return verString },
 	}).ParseGlob("./views/*.html"))
 }
 
@@ -47,7 +46,7 @@ func checkin(d map[string]interface{}) {
 }
 
 func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru string, page int, tags []string) {
-	data, _, err := s.Boorus[targetBooru].Page(context.TODO(), booru.Query{Tags: tags}, page)
+	data, _, err := s.Boorus[targetBooru].Page(r.Context(), booru.Query{Tags: tags}, page)
 	if err != nil {
 		panic(err)
 	}
@@ -134,7 +133,7 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 }
 
 func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru string, id int) {
-	data, err := s.Boorus[targetBooru].Post(context.TODO(), id)
+	data, err := s.Boorus[targetBooru].Post(r.Context(), id)
 	if err != nil {
 		panic(err)
 	}
