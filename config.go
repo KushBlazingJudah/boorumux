@@ -13,7 +13,7 @@ const (
 
 // Default agents
 var (
-	userAgent    = fmt.Sprintf("boorumux/%d.%d.%d", verMajor, verMinor, verPatch)
+	UserAgent    = fmt.Sprintf("boorumux/%d.%d.%d", verMajor, verMinor, verPatch)
 	serverHeader = fmt.Sprintf("boorumux/%d.%d.%d", verMajor, verMinor, verPatch)
 )
 

@@ -13,11 +13,11 @@ import (
 	"time"
 )
 
-// Gelbooru implements the Gelbooru API.
+// gelbooru implements the gelbooru API.
 //
 // API documentation: https://gelbooru.com/index.php?page=wiki&s=view&id=18780
-type Gelbooru struct {
-	// URL is the location of where the Gelbooru API is.
+type gelbooru struct {
+	// URL is the location of where the gelbooru API is.
 	// This is a necessary field, or else all requests will fail as they have
 	// nowhere to go.
 	// URL must not change after first use.
@@ -26,11 +26,13 @@ type Gelbooru struct {
 	URL *url.URL
 
 	// HttpClient is the HTTP client object that is used to talk to the
-	// Gelbooru API.
+	// gelbooru API.
 	HttpClient *http.Client
+
+	ua string
 }
 
-// gelbooruPost holds some of the information returned by the Gelbooru API.
+// gelbooruPost holds some of the information returned by the gelbooru API.
 // This isn't supposed to be used outside of this package; it is simply here to
 // ease unmarshaling of responses.
 // Always convert to the standard Post struct instead.
@@ -63,9 +65,27 @@ type gelbooruResp struct {
 	Post []gelbooruPost
 }
 
+func init() {
+	registered["gelbooru"] = func(cfg map[string]interface{}) (API, error) {
+		g := &gelbooru{}
+
+		g.ua = cfg["agent"].(string)
+		g.HttpClient = cfg["http"].(*http.Client)
+
+		u, err := url.Parse(cfg["url"].(string))
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing url: %w", err)
+		}
+
+		g.URL = u
+
+		return g, nil
+	}
+}
+
 // toPost converts the internal representation to an actual Post used by the
 // outer world.
-func (dp gelbooruPost) toPost(d *Gelbooru) Post {
+func (dp gelbooruPost) toPost(d *gelbooru) Post {
 	// Some things are 1:1 but others need to be parsed
 	p := Post{
 		Id:     dp.Id,
@@ -109,11 +129,11 @@ func (dp gelbooruPost) toPost(d *Gelbooru) Post {
 }
 
 // HTTP returns the HttpClient that this booru uses.
-func (d *Gelbooru) HTTP() *http.Client {
+func (d *gelbooru) HTTP() *http.Client {
 	return d.HttpClient
 }
 
-func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, error) {
+func (d *gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, error) {
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
@@ -132,6 +152,8 @@ func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, er
 	if err != nil {
 		return nil, 0, err
 	}
+
+	req.Header.Set("User-Agent", d.ua)
 
 	// Do the needful
 	res, err := d.HttpClient.Do(req)
@@ -161,7 +183,7 @@ func (d *Gelbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, er
 	return out, int(math.Ceil(float64(rawResp.A.Total-rawResp.A.Offset) / float64(rawResp.A.Limit))), nil
 }
 
-func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
+func (d *gelbooru) Post(ctx context.Context, id int) (*Post, error) {
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
@@ -179,6 +201,8 @@ func (d *Gelbooru) Post(ctx context.Context, id int) (*Post, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("User-Agent", d.ua)
 
 	// Do the needful
 	res, err := d.HttpClient.Do(req)

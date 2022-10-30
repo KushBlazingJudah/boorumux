@@ -12,10 +12,10 @@ import (
 	"time"
 )
 
-// Danbooru implements the Danbooru API.
+// danbooru implements the Danbooru API.
 //
 // API documentation: https://danbooru.donmai.us/wiki_pages/help:api
-type Danbooru struct {
+type danbooru struct {
 	// URL is the location of where the Danbooru API is.
 	// This is a necessary field, or else all requests will fail as they have
 	// nowhere to go.
@@ -27,6 +27,8 @@ type Danbooru struct {
 	// HttpClient is the HTTP client object that is used to talk to the
 	// Danbooru API.
 	HttpClient *http.Client
+
+	ua string
 }
 
 // danbooruPost holds some of the information returned by the Danbooru API.
@@ -55,9 +57,27 @@ type danbooruPost struct {
 	Rating string
 }
 
+func init() {
+	registered["danbooru"] = func(cfg map[string]interface{}) (API, error) {
+		d := &danbooru{}
+
+		d.ua = cfg["agent"].(string)
+		d.HttpClient = cfg["http"].(*http.Client)
+
+		u, err := url.Parse(cfg["url"].(string))
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing url: %w", err)
+		}
+
+		d.URL = u
+
+		return d, nil
+	}
+}
+
 // toPost converts the internal representation to an actual Post used by the
 // outer world.
-func (dp danbooruPost) toPost(d *Danbooru) Post {
+func (dp danbooruPost) toPost(d *danbooru) Post {
 	// Luckily for us, there's a rather direct conversion.
 
 	var r Rating
@@ -99,11 +119,11 @@ func (dp danbooruPost) toPost(d *Danbooru) Post {
 }
 
 // HTTP returns the HttpClient that this booru uses.
-func (d *Danbooru) HTTP() *http.Client {
+func (d *danbooru) HTTP() *http.Client {
 	return d.HttpClient
 }
 
-func (d *Danbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, error) {
+func (d *danbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, error) {
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
@@ -118,6 +138,8 @@ func (d *Danbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, er
 	if err != nil {
 		return nil, -1, err
 	}
+
+	req.Header.Set("User-Agent", d.ua)
 
 	// Do the needful
 	res, err := d.HttpClient.Do(req)
@@ -146,7 +168,7 @@ func (d *Danbooru) Page(ctx context.Context, q Query, page int) ([]Post, int, er
 	return out, -1, nil
 }
 
-func (d *Danbooru) Post(ctx context.Context, id int) (*Post, error) {
+func (d *danbooru) Post(ctx context.Context, id int) (*Post, error) {
 	// Copy our URL object so we can set the query
 	u := *d.URL
 
@@ -157,6 +179,8 @@ func (d *Danbooru) Post(ctx context.Context, id int) (*Post, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("User-Agent", d.ua)
 
 	// Do the needful
 	res, err := d.HttpClient.Do(req)

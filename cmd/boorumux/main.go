@@ -23,35 +23,28 @@ var (
 
 var proxyFn func(*http.Request) (*url.URL, error) = nil
 
-type bcfg struct {
-	Type    string   `json:"type"`
-	Proxy   string   `json:"proxy,omitempty"`
-	Url     string   `json:"url,omitempty"`
-	Combine []string `json:"combine,omitempty"`
-}
-
 type cfg struct {
-	Proxy     string          `json:"proxy"`
-	Sources   map[string]bcfg `json:"sources"`
-	Blacklist interface{}     `json:"blacklist"`
+	Proxy     string                 `json:"proxy"`
+	Sources   map[string]interface{} `json:"sources"`
+	Blacklist interface{}            `json:"blacklist"`
 }
 
 func mkDefaults() {
 	log.Printf("Creating ./boorumux.json with defaults")
 
 	d := cfg{
-		Sources: map[string]bcfg{
-			"gelbooru": bcfg{
-				Type: "gelbooru",
-				Url:  "https://gelbooru.com",
+		Sources: map[string]interface{}{
+			"gelbooru": map[string]string{
+				"type": "gelbooru",
+				"url":  "https://gelbooru.com",
 			},
-			"safebooru": bcfg{
-				Type: "danbooru",
-				Url:  "https://safebooru.donmai.us",
+			"safebooru": map[string]string{
+				"type": "danbooru",
+				"url":  "https://safebooru.donmai.us",
 			},
-			"mux": bcfg{
-				Type:    "mux",
-				Combine: []string{"gelbooru", "safebooru"},
+			"mux": map[string]interface{}{
+				"type":    "mux",
+				"combine": []string{"gelbooru", "safebooru"},
 			},
 		},
 		Blacklist: []string{
@@ -75,41 +68,32 @@ func mkDefaults() {
 	}
 }
 
-func genBooru(name string, b bcfg, c cfg) booru.API {
+func genBooru(name string, b map[string]interface{}, c cfg) booru.API {
 	ht := &http.Client{}
 
-	if b.Proxy != "" {
-		pu, err := url.Parse(b.Proxy)
+	if b["proxy"] != nil {
+		pu, err := url.Parse(b["proxy"].(string))
 		if err != nil {
 			log.Fatalf("error parsing proxy URL for booru \"%s\": %v", name, err)
 		}
 
-		log.Printf("booru \"%s\" proxy is %s", name, b.Proxy)
+		log.Printf("booru \"%s\" proxy is %s", name, pu.String())
 		ht.Transport = &http.Transport{Proxy: http.ProxyURL(pu)}
 	} else {
 		log.Printf("booru \"%s\" is using default proxy", name)
 		ht.Transport = &http.Transport{Proxy: proxyFn}
 	}
 
-	u, err := url.Parse(b.Url)
-	if err != nil {
-		log.Fatalf("failed parsing url for booru \"%s\": %v", name, err)
+	// Default arguments
+	if _, ok := b["agent"]; !ok {
+		b["agent"] = boorumux.UserAgent
 	}
 
-	var B booru.API
-	switch b.Type {
-	case "danbooru":
-		B = &booru.Danbooru{
-			URL:        u,
-			HttpClient: ht,
-		}
-	case "gelbooru":
-		B = &booru.Gelbooru{
-			URL:        u,
-			HttpClient: ht,
-		}
-	default:
-		panic("unknown source")
+	b["http"] = ht
+
+	B, err := booru.New(b["type"].(string), b)
+	if err != nil {
+		log.Fatalf("error initializing booru \"%s\": %v", name, err)
 	}
 
 	return B
@@ -156,15 +140,16 @@ func main() {
 	bm.Boorus = map[string]booru.API{}
 	bm.Blacklist = filter.ParseMany(c.Blacklist)
 
-	muxes := map[string]bcfg{}
+	muxes := map[string]map[string]interface{}{}
 
 	for k, v := range c.Sources {
-		if v.Type == "mux" {
-			muxes[k] = v
+		vv := v.(map[string]interface{})
+		if vv["type"] == "mux" {
+			muxes[k] = vv
 			continue
 		}
 
-		bm.Boorus[k] = genBooru(k, v, c)
+		bm.Boorus[k] = genBooru(k, vv, c)
 	}
 
 	// Setup muxes
@@ -172,8 +157,8 @@ func main() {
 		m := boorumux.Mux{}
 
 		// Check to see if all boorus are available
-		for _, vv := range v.Combine {
-			if b, ok := bm.Boorus[vv]; ok {
+		for _, vv := range v["combine"].([]interface{}) {
+			if b, ok := bm.Boorus[vv.(string)]; ok {
 				m.Boorus = append(m.Boorus, b)
 			} else {
 				log.Fatal("for mux \"%s\": booru \"%s\" not found", k, vv)

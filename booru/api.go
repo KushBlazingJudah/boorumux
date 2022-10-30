@@ -22,6 +22,10 @@ const (
 	Explicit
 )
 
+type initFunc func(cfg map[string]interface{}) (API, error)
+
+var registered = map[string]initFunc{}
+
 // API is an interface that neatly abstracts the hard parts of parsing and
 // mangling results from the actual booru's API into something easy to use and
 // comprehend.
@@ -169,4 +173,14 @@ func newHTTPError(req *http.Response) HTTPError {
 		URL:  req.Request.URL.String(),
 		Code: req.StatusCode,
 	}
+}
+
+// New creates a new API instance from provided configuration.
+func New(t string, cfg map[string]interface{}) (API, error) {
+	f, ok := registered[t]
+	if !ok {
+		return nil, fmt.Errorf("booru \"%s\" not found", t)
+	}
+
+	return f(cfg)
 }
