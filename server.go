@@ -72,6 +72,8 @@ type Server struct {
 
 // ServeHTTP serves a requested page.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Server", serverHeader)
+
 	if r.Method != "GET" && r.Method != "HEAD" {
 		// We only support GET and HEAD
 		w.WriteHeader(http.StatusMethodNotAllowed)

@@ -35,7 +35,7 @@ func init() {
 		"isUrl":     schemaRegexp.MatchString,
 		"prettyUrl": prettyUrl,
 		"concat":    func(s []string, c string) string { return strings.Join(s, c) },
-		"ver":       func() string { return "0.0.0" }, // TODO
+		"ver":       func() string { return verString }, // TODO
 	}).ParseGlob("./views/*.html"))
 }
 
