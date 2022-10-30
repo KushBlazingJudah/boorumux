@@ -72,8 +72,8 @@ type Server struct {
 
 // ServeHTTP serves a requested page.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		// We only support GET
+	if r.Method != "GET" && r.Method != "HEAD" {
+		// We only support GET and HEAD
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -90,6 +90,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ep := r.URL.EscapedPath()
 	if ep == "/favicon.ico" {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	} else if ep == "/" {
 		// Render the index, we don't need to do much for that though
@@ -173,7 +174,7 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBoor
 	}()
 
 	// TODO: Trusted domains
-	req, err := http.NewRequest("GET", target, nil)
+	req, err := http.NewRequest(r.Method, target, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -198,8 +199,10 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBoor
 		}
 	}
 
-	// This is where the aforementioned bug occurs.
-	if _, err := io.Copy(w, res.Body); err != nil {
-		panic(err)
+	if r.Method != "HEAD" { // We don't send a message body for HEAD
+		// This is where the aforementioned bug occurs.
+		if _, err := io.Copy(w, res.Body); err != nil {
+			panic(err)
+		}
 	}
 }
