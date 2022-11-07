@@ -192,6 +192,8 @@ ul#boorulist li {
 .remove { color: var(--color1); }
 .active { background: var(--background); }
 .post.active img { border: 4px var(--color1) solid; }
+a.tagname.inactive { color: var(--color7); }
+a.tagname.filter { font-weight: bold; }
 
 #feature { width: 100%; max-height: 100%; }
 .info b { width: 100%; display: block; }
@@ -199,3 +201,5 @@ ul#boorulist li {
 
 #q { background: var(--background); color: var(--foreground); }
 #q::placeholder { color: var(--color7); }
+
+#resetfilter { display: none; } /* turned on via JS */

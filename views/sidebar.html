@@ -49,7 +49,7 @@
 	{{end}}
 	{{end}}
 
-	<h3>Tags</h3>
+	<h3>Tags{{if not .post}} <a href="#" id="resetfilter">[reset]</a>{{end}}</h3>
 	<ul id="taglist">
 		{{range .activeTags}}
 		<li class="tag active"><a class="add" href="#">|</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname">{{humantag .}}</a></li>
