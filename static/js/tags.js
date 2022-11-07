@@ -23,13 +23,20 @@ function tagHasActive(tag) {
 function updateTaglist() {
 	let hasEnabled = filtered.length > 0;
 	if (hasEnabled) resetBtn.style.display = "inline";
+	else resetBtn.style.display = "none";
 
 	for(let i of document.getElementsByClassName("tagname")) {
+		if (!hasEnabled) {
+			i.classList.remove("inactive");
+			i.classList.remove("filter");
+			continue;
+		}
+
 		let tag = i.dataset.tag;
 
-		if (tagHasActive(tag) || !hasEnabled) {
+		if (tagHasActive(tag)) {
 			i.classList.remove("inactive");
-			if (filtered.includes(tag) && hasEnabled)
+			if (filtered.includes(tag))
 				i.classList.add("filter");
 			else
 				i.classList.remove("filter");
@@ -40,32 +47,40 @@ function updateTaglist() {
 	}
 }
 
+function updateFilter() {
+	let hasEnabled = filtered.length > 0;
+	for (let i of document.getElementsByClassName("post")) {
+		if (!hasEnabled) { i.style.display = ""; continue; }
+
+		let t = tags(i);
+		i.style.display = filtered.every(e=>t.includes(e)) ? "" : "none";
+	}
+}
+
 function filter(tag) {
 	if (filtered.includes(tag)) return;
 	filtered.push(tag);
 
-	let exclude = findThumbByTag(tag);
+	updateFilter();
+	updateTaglist();
+}
 
-	for (let i of document.getElementsByClassName("post")) {
-		if (!exclude.includes(i)) i.style.display = "none";
-	}
+function unfilter(tag) {
+	if (!filtered.includes(tag)) return;
+	filtered = filtered.filter(e=>e!=tag);
 
+	updateFilter();
 	updateTaglist();
 }
 
 function resetFilter() {
 	filtered = [];
-	for (let i of document.getElementsByClassName("post")) {
-		i.style.display = "";
-	}
 
+	updateFilter();
 	updateTaglist();
 }
 
-resetBtn.onclick = (e) => {
-	resetFilter();
-	resetBtn.style.display = "none";
-};
+resetBtn.onclick = resetFilter;
 
 for(let i of document.getElementsByClassName("tagname")) {
 	let tag = i.dataset.tag;
@@ -77,7 +92,10 @@ for(let i of document.getElementsByClassName("tagname")) {
 
 	i.onclick = (e) => {
 		e.preventDefault();
-		filter(tag);
+		if (i.classList.contains("filter"))
+			unfilter(tag);
+		else
+			filter(tag);
 	};
 
 	i.onmouseleave = () => {
