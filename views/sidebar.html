@@ -33,7 +33,7 @@
 	</div>
 	<div class="info">
 		<b>Created</b>
-		<span>{{.post.Created}}</span>
+		<span>{{fmtTime .post.Created}}</span>
 	</div>
 	{{if .post.Original.Size}}
 	<div class="info">

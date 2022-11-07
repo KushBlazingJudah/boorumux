@@ -1,6 +1,7 @@
 package boorumux
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/KushBlazingJudah/boorumux/booru"
 	"github.com/KushBlazingJudah/boorumux/filter"
@@ -72,6 +74,8 @@ type Server struct {
 
 // ServeHTTP serves a requested page.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	reqTime := time.Now()
+
 	w.Header().Set("Server", serverHeader)
 
 	if r.Method != "GET" && r.Method != "HEAD" {
@@ -157,7 +161,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.postHandler(w, r, targetBooru, v)
 	case reqProxy:
 		s.proxyHandler(w, r, targetBooru, r.URL.Query().Get("proxy"))
+		return
 	}
+
+	fmt.Fprintf(w, "<!-- handled in %s -->", time.Since(reqTime).Truncate(time.Microsecond).String())
 }
 
 func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBooru string, target string) {

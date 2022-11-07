@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/KushBlazingJudah/boorumux/booru"
 )
@@ -34,6 +35,7 @@ func init() {
 		"isUrl":     schemaRegexp.MatchString,
 		"prettyUrl": prettyUrl,
 		"concat":    func(s []string, c string) string { return strings.Join(s, c) },
+		"fmtTime":   func(t time.Time) string { return t.Format("2006-01-02 15:04:05 -0700") },
 		"ver":       func() string { return verString },
 	}).ParseGlob("./views/*.html"))
 }
