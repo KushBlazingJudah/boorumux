@@ -42,7 +42,7 @@ func mkDefaults() {
 				"type": "danbooru",
 				"url":  "https://safebooru.donmai.us",
 			},
-			"mux": map[string]interface{}{
+			"examplemux": map[string]interface{}{
 				"type":    "mux",
 				"combine": []string{"gelbooru", "safebooru"},
 			},
@@ -159,13 +159,13 @@ func main() {
 		// Check to see if all boorus are available
 		for _, vv := range v["combine"].([]interface{}) {
 			if b, ok := bm.Boorus[vv.(string)]; ok {
-				m.Boorus = append(m.Boorus, b)
+				m = append(m, b)
 			} else {
 				log.Fatal("for mux \"%s\": booru \"%s\" not found", k, vv)
 			}
 		}
 
-		bm.Boorus[k] = &m
+		bm.Boorus[k] = m
 	}
 
 	mux := http.NewServeMux()

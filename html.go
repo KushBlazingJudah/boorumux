@@ -47,8 +47,41 @@ func checkin(d map[string]interface{}) {
 	mapPool.Put(d)
 }
 
+func (s *Server) findBooru(r *http.Request, target string) (booru.API, error) {
+	if target == "mux" {
+		to, ok := r.URL.Query()["b"]
+		if !ok {
+			return nil, fmt.Errorf("b query parameter not found")
+		}
+
+		bs := make([]booru.API, len(to))
+		for i, v := range to {
+			b, ok := s.Boorus[v]
+			if !ok {
+				return nil, fmt.Errorf("booru \"%s\" not found", v)
+			}
+
+			bs[i] = b
+		}
+
+		return Mux(bs), nil
+	}
+
+	b, ok := s.Boorus[target]
+	if !ok {
+		return nil, fmt.Errorf("booru \"%s\" not found", target)
+	}
+
+	return b, nil
+}
+
 func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru string, page int, tags []string) {
-	data, _, err := s.Boorus[targetBooru].Page(r.Context(), booru.Query{Tags: tags}, page)
+	tb, err := s.findBooru(r, targetBooru)
+	if err != nil {
+		panic(err)
+	}
+
+	data, _, err := tb.Page(r.Context(), booru.Query{Tags: tags}, page)
 	if err != nil {
 		panic(err)
 	}

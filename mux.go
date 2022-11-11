@@ -14,11 +14,9 @@ import (
 // Mux is the heart of the "-mux" suffix of Boorumux.
 // It implements booru.API, but it also takes in anything that also implements
 // booru.API.
-type Mux struct {
-	Boorus []booru.API
-}
+type Mux []booru.API
 
-func (m *Mux) Page(ctx context.Context, q booru.Query, page int) ([]booru.Post, int, error) {
+func (m Mux) Page(ctx context.Context, q booru.Query, page int) ([]booru.Post, int, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -26,9 +24,9 @@ func (m *Mux) Page(ctx context.Context, q booru.Query, page int) ([]booru.Post, 
 	var n int32 = 0
 	var cerr error
 
-	dc := make(chan []booru.Post, len(m.Boorus))
+	dc := make(chan []booru.Post, len(m))
 
-	for _, v := range m.Boorus {
+	for _, v := range m {
 		wg.Add(1)
 
 		go func(b booru.API) {
@@ -67,10 +65,10 @@ func (m *Mux) Page(ctx context.Context, q booru.Query, page int) ([]booru.Post, 
 	return results, -1, nil
 }
 
-func (m *Mux) Post(ctx context.Context, id int) (*booru.Post, error) {
+func (m Mux) Post(ctx context.Context, id int) (*booru.Post, error) {
 	panic("tried to call Post on mux")
 }
 
-func (m *Mux) HTTP() *http.Client {
+func (m Mux) HTTP() *http.Client {
 	return nil
 }
