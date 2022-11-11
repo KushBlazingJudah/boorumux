@@ -8,7 +8,7 @@ import (
 const (
 	verMajor = 0
 	verMinor = 0
-	verPatch = 1
+	verPatch = 2
 )
 
 // Default agents

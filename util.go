@@ -3,6 +3,7 @@ package boorumux
 import (
 	"fmt"
 	"html/template"
+	"net/url"
 	"regexp"
 	"sort"
 	"strings"
@@ -84,24 +85,63 @@ func mostCommon(list []string) []string {
 	return o
 }
 
-func buildPageBlock(base string, current int) template.HTML {
+func buildPageBlock(base string, hasAttrs bool, current int) template.HTML {
 	// TODO: This function really sucks; list out a couple pages, in a form
 	// similar to this: 1 2 ... 5 [6] 7 ... 12
+
+	c := "&"
+	if !hasAttrs {
+		c = "?"
+	}
 
 	sb := strings.Builder{}
 	sb.WriteString(`<div id="pages">`)
 	if current != 0 {
 		fmt.Fprintf(&sb, ` <a href="%s">0</a>`, base)
 		if current-1 > 0 {
-			fmt.Fprintf(&sb, ` ... <a href="%s&page=%d">%d</a> `, base, current-1, current-1)
+			fmt.Fprintf(&sb, ` ... <a href="%s%spage=%d">%d</a> `, base, c, current-1, current-1)
 		}
 		fmt.Fprintf(&sb, ` <b>%d</b> `, current)
 	}
-	fmt.Fprintf(&sb, ` <a href="%s&page=%d">next</a>`, base, current+1)
+	fmt.Fprintf(&sb, ` <a href="%s%spage=%d">next</a>`, base, c, current+1)
 	sb.WriteString(`</div>`)
 	return template.HTML(sb.String())
 }
 
 func prettyUrl(u string) string {
 	return schemaRegexp.ReplaceAllString(u, "")
+}
+
+func has[T comparable](needle T, haystack []T) bool {
+	for _, v := range haystack {
+		if v == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func mkUrl(cur string, q string, mux []string) string {
+	if mux == nil && q == "" {
+		return "/" + cur
+	} else if mux == nil {
+		return fmt.Sprintf("/%s?q=%s", cur, url.QueryEscape(q))
+	}
+
+	b := strings.Builder{}
+	b.WriteRune('/')
+	b.WriteString(cur)
+	b.WriteRune('?')
+	for i, m := range mux {
+		if i > 0 {
+			b.WriteRune('&')
+		}
+		b.WriteString("b=")
+		b.WriteString(url.QueryEscape(m))
+	}
+	if q != "" {
+		b.WriteString("&q=")
+		b.WriteString(url.QueryEscape(q))
+	}
+	return b.String()
 }

@@ -1,4 +1,5 @@
 {{$q := .q}}
+{{$mux := .mux}}
 {{$booru := .booru}}
 
 {{template "header.html" .}}
@@ -8,7 +9,7 @@
 	<div id="thumbs">
 		{{range .posts}}
 		{{$pbooru := booruId .Origin}}
-		<a href="/{{$pbooru}}?post={{.Id}}{{if $q}}&q={{$q}}{{end}}{{if ne $booru $pbooru}}&from={{$booru}}{{end}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{concat .Tags " "}}">
+		<a href="/{{$pbooru}}?post={{.Id}}{{if $q}}&q={{$q}}{{end}}{{if ne $booru $pbooru}}&from={{$booru}}{{end}}{{if $mux}}{{range $mux}}&b={{.}}{{end}}{{end}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{concat .Tags " "}}">
 			<img src="/{{$pbooru}}?proxy={{.Thumbnail.Href}}"></img>
 		</a>
 		{{end}}

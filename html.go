@@ -27,16 +27,18 @@ var ssPool = sync.Pool{
 func init() {
 	// Compile all of the templates.
 	templates = template.Must(template.New("").Funcs(template.FuncMap{
-		"embed":     func() error { panic("embed called too early") },
-		"booruId":   func() error { panic("booruId called too early") },
-		"humantag":  func(s string) string { return strings.ReplaceAll(s, "_", " ") },
-		"size":      humanSize,
-		"pages":     buildPageBlock,
-		"isUrl":     schemaRegexp.MatchString,
-		"prettyUrl": prettyUrl,
-		"concat":    func(s []string, c string) string { return strings.Join(s, c) },
-		"fmtTime":   func(t time.Time) string { return t.Format("2006-01-02 15:04:05 -0700") },
-		"ver":       func() string { return verString },
+		"embed":      func() error { panic("embed called too early") },
+		"booruId":    func() error { panic("booruId called too early") },
+		"humantag":   func(s string) string { return strings.ReplaceAll(s, "_", " ") },
+		"size":       humanSize,
+		"pages":      buildPageBlock,
+		"isUrl":      schemaRegexp.MatchString,
+		"prettyUrl":  prettyUrl,
+		"concat":     func(s []string, c string) string { return strings.Join(s, c) },
+		"fmtTime":    func(t time.Time) string { return t.Format("2006-01-02 15:04:05 -0700") },
+		"ver":        func() string { return verString },
+		"mkUrl":      mkUrl,
+		"has_string": has[string],
 	}).ParseGlob("./views/*.html"))
 }
 
@@ -138,6 +140,10 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata := mapPool.Get().(map[string]interface{})
 	defer checkin(tmpldata)
 
+	if targetBooru == "mux" {
+		tmpldata["mux"] = r.URL.Query()["b"]
+	}
+
 	tmpldata["booru"] = targetBooru
 	tmpldata["boorus"] = s.boorus
 	tmpldata["activeTags"] = tags
@@ -179,6 +185,10 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	// Render it out
 	tmpldata := mapPool.Get().(map[string]interface{})
 	defer checkin(tmpldata)
+
+	if r.URL.Query().Get("from") == "mux" {
+		tmpldata["mux"] = r.URL.Query()["b"]
+	}
 
 	tmpldata["title"] = fmt.Sprintf("%s on %s - Boorumux", strings.Join(data.Tags, " "), targetBooru)
 	tmpldata["booru"] = targetBooru

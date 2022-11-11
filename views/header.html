@@ -1,9 +1,11 @@
-{{$booru := .booru}}
-{{$from := .from}}
-{{$q := .q}}
+{{$c := .booru}}
+{{if and .from (ne .booru "mux")}}
+{{$c = .from}}
+{{end}}
 <div id="header">
-	<a href="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}" id="title">Boorumux</a>
-	<form action="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}" id="search" method="get">
+	<a href="{{mkUrl $c "" .mux}}" id="title">Boorumux</a>
+	<form action="/{{$c}}" id="search" method="get">
+		{{range .mux}}<input type="hidden" name="b" value="{{.}}">{{end}}
 		<input type="search" id="q" name="q" placeholder="rating:safe touhou..."{{if .q}} value="{{.q}}"{{end}}>
 	</form>
 </div>

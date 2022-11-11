@@ -1,22 +1,35 @@
 {{$booru := .booru}}
 {{$from := .from}}
+{{$mux := .mux}}
 {{$q := .q}}
+{{$attrs := false}}
+{{if or $q $mux}}
+{{$attrs = true}}
+{{end}}
+{{$c := .booru}}
+{{if and .from (ne .booru "mux")}}
+{{$c = .from}}
+{{end}}
+
 <div id="sidebar">
 	{{if not .post}}
 	{{$page := or .page 0}}
-	{{pages (printf "/%s?q=%s" .booru .q) $page}}
+	{{pages (mkUrl .booru .q .mux) $attrs $page}}
 	<hr>
 	{{end}}
 
 	<h3>Boorus</h3>
 	<ul id="boorulist">
-		{{if .from}}
-		<li class="booru active"><a class="booruname">{{$from}}</a></li>
-		{{end}}
+		{{if .mux}}
+		{{range .mux}}<li class="booru active"><a class="booruname" href="/{{.}}{{if $q}}?q={{$q}}{{end}}">{{.}}</a></li>{{end}}
+		{{range .boorus}}{{if and (ne . $booru) (ne . $from) (and $mux (not (has_string . $mux)))}}<li class="booru"><a class="booruname" href="/{{.}}{{if $q}}?q={{$q}}{{end}}">{{.}}</a></li>{{end}}{{end}}
+		{{else}}
+		{{if $from}}<li class="booru active"><a class="booruname">{{$from}}</a></li>{{end}}
 		<li class="booru active"><a class="booruname">{{$booru}}</a></li>
 		{{range .boorus}}
 		{{if and (ne . $booru) (ne . $from)}}
 		<li class="booru"><a class="booruname" href="/{{.}}{{if $q}}?q={{$q}}{{end}}">{{.}}</a></li>
+		{{end}}
 		{{end}}
 		{{end}}
 	</ul>
@@ -55,7 +68,7 @@
 		<li class="tag active"><a class="add" href="#">|</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname">{{humantag .}}</a></li>
 		{{end}}
 		{{range .tags}}
-		<li class="tag"><a class="add" href="#" onclick="return addTag('{{.}}')">+</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname" data-tag="{{.}}" href="/{{if $from}}{{$from}}{{else}}{{$booru}}{{end}}?q={{.}}">{{humantag .}}</a></li>
+		<li class="tag"><a class="add" href="#" onclick="return addTag('{{.}}')">+</a> <a class="remove" href="#" onclick="return delTag('{{.}}')">-</a> <a class="tagname" data-tag="{{.}}" href="{{mkUrl $c . $mux}}">{{humantag .}}</a></li>
 		{{end}}
 	</ul>
 </div>
