@@ -48,6 +48,7 @@ type gelbooruPost struct {
 
 	OriginalUrl string `json:"file_url"`
 	ThumbUrl    string `json:"preview_url"`
+	MD5         string `json:"md5"`
 
 	Tags string `json:"tags"`
 
@@ -92,6 +93,7 @@ func (dp gelbooruPost) toPost(d *gelbooru) Post {
 		Score:  dp.Score,
 		Source: dp.Source,
 		Tags:   strings.Split(dp.Tags, " "),
+		Hash:   dp.MD5,
 		Original: Image{
 			Href:   dp.OriginalUrl,
 			MIME:   mime.TypeByExtension(path.Ext(dp.OriginalUrl)), // mime asks we include the dot

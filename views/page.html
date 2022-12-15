@@ -10,7 +10,7 @@
 		{{range .posts}}
 		{{$pbooru := booruId .Origin}}
 		<a href="/{{$pbooru}}?post={{.Id}}{{if $q}}&q={{$q}}{{end}}{{if ne $booru $pbooru}}&from={{$booru}}{{end}}{{if $mux}}{{range $mux}}&b={{.}}{{end}}{{end}}" class="post{{if .Original.IsVideo}} video{{else if eq .Original.MIME "image/gif"}} gif{{end}}" title="{{concat .Tags " "}}">
-			<img src="/{{$pbooru}}?proxy={{.Thumbnail.Href}}"></img>
+			<img src="/{{$pbooru}}/proxy/{{.Hash}}{{ext .Thumbnail.MIME}}?proxy={{.Thumbnail.Href}}"></img>
 		</a>
 		{{end}}
 	</div>

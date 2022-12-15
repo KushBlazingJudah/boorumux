@@ -3,6 +3,7 @@ package boorumux
 import (
 	"fmt"
 	"html/template"
+	"mime"
 	"net/http"
 	"sort"
 	"strings"
@@ -24,6 +25,13 @@ var ssPool = sync.Pool{
 	},
 }
 
+var mimeExt = map[string]string{
+	"image/jpeg": ".jpg",
+	"image/png":  ".png",
+	"image/gif":  ".gif",
+	"video/mp4":  ".mp4",
+}
+
 func init() {
 	// Compile all of the templates.
 	templates = template.Must(template.New("").Funcs(template.FuncMap{
@@ -39,6 +47,18 @@ func init() {
 		"ver":        func() string { return verString },
 		"mkUrl":      mkUrl,
 		"has_string": has[string],
+		"ext": func(m string) string {
+			e, ok := mimeExt[m]
+			if ok {
+				return e
+			}
+
+			ex, _ := mime.ExtensionsByType(m)
+			if ex == nil {
+				return ""
+			}
+			return ex[0]
+		},
 	}).ParseGlob("./views/*.html"))
 }
 

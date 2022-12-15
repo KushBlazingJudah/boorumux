@@ -51,6 +51,7 @@ type danbooruPost struct {
 	ThumbUrl    string `json:"large_file_url"`
 	Width       int    `json:"image_width"`
 	Height      int    `json:"image_height"`
+	MD5         string `json:"md5"`
 
 	Tags string `json:"tag_string"`
 
@@ -102,6 +103,7 @@ func (dp danbooruPost) toPost(d *danbooru) Post {
 		Updated: dp.Updated,
 		Tags:    strings.Split(dp.Tags, " "),
 		Rating:  r,
+		Hash:    dp.MD5,
 		Original: Image{
 			Href:   dp.OriginalUrl,
 			MIME:   mime.TypeByExtension("." + dp.Ext), // mime asks we include the dot

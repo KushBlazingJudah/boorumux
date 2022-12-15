@@ -27,6 +27,7 @@ const (
 )
 
 var indexRegexp = regexp.MustCompile(`^/([0-9a-z+]+)/?$`)
+var proxyRegexp = regexp.MustCompile(`^/([0-9a-z+]+)/proxy/[^/]*`)
 
 // proxyReqHeaders is a list of headers that are sent with a proxy request to a
 // booru.
@@ -120,6 +121,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(matches) > 0 {
 		targetBooru = matches[1]
 	} else {
+		// Does it match the proxy regexp?
+		matches = proxyRegexp.FindStringSubmatch(ep)
+		if len(matches) > 0 {
+			// Yes it does!
+			s.proxyHandler(w, r, matches[1], r.URL.Query().Get("proxy"))
+			return
+		}
+
 		// TODO
 		panic("invalid request")
 	}
@@ -141,8 +150,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		action = reqPost
-	} else if r.URL.Query().Get("proxy") != "" {
-		action = reqProxy
 	}
 
 	// Parse tags
@@ -155,9 +162,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.pageHandler(w, r, targetBooru, v, tags)
 	case reqPost:
 		s.postHandler(w, r, targetBooru, v)
-	case reqProxy:
-		s.proxyHandler(w, r, targetBooru, r.URL.Query().Get("proxy"))
-		return
 	}
 }
 
@@ -169,6 +173,7 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request, targetBoor
 		// I forget.
 		//
 		// Point is, I don't know what actually causes the problem.
+		// I suspect it is a race condition.
 		// If you are a brave soul, remove this deferred function and trigger
 		// it somehow, because I also don't know what triggers it.
 		if v := recover(); v != nil {

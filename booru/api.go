@@ -104,6 +104,9 @@ type Post struct {
 	// This is normally the "large" but not "original" size of an image.
 	Thumbnail Image
 
+	// Hash is often the MD5 of the original image.
+	Hash string
+
 	Rating Rating
 	Origin API
 }
