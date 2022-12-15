@@ -88,6 +88,8 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 		panic(err)
 	}
 
+	reqTime := time.Now()
+
 	// Filter out blacklisted tags
 	// This looks weird but trust me on this; it's simply an in-place filter.
 	n := 0
@@ -171,6 +173,8 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 			return ""
 		},
 	}).ExecuteTemplate(w, "main.html", tmpldata)
+
+	fmt.Fprintf(w, "<!-- rendered in %s -->", time.Since(reqTime).Truncate(time.Microsecond).String())
 }
 
 func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru string, id int) {
@@ -178,6 +182,8 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	if err != nil {
 		panic(err)
 	}
+
+	reqTime := time.Now()
 
 	// Sort it out
 	sort.Strings(data.Tags)
@@ -201,4 +207,6 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	templates.Funcs(template.FuncMap{"embed": func() error {
 		return templates.Lookup("post.html").Execute(w, tmpldata)
 	}}).ExecuteTemplate(w, "main.html", tmpldata)
+
+	fmt.Fprintf(w, "<!-- rendered in %s -->", time.Since(reqTime).Truncate(time.Microsecond).String())
 }
