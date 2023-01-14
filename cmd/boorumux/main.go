@@ -26,6 +26,7 @@ var proxyFn func(*http.Request) (*url.URL, error) = nil
 type cfg struct {
 	Proxy     string                 `json:"proxy"`
 	Sources   map[string]interface{} `json:"sources"`
+	Localbooru string `json:"localbooru"`
 	Blacklist interface{}            `json:"blacklist"`
 }
 
@@ -124,6 +125,8 @@ func main() {
 	if err := json.NewDecoder(f).Decode(&c); err != nil {
 		log.Fatalf("failed reading config: %v", err)
 	}
+
+	bm.Localbooru = c.Localbooru
 
 	// TODO: Config
 	var pu *url.URL

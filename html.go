@@ -225,10 +225,36 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata["q"] = r.URL.Query().Get("q")
 	tmpldata["from"] = r.URL.Query().Get("from")
 
+	if s.Localbooru != "" {
+		tmpldata["localbooru"] = s.Localbooru
+	}
+
 	t := template.Must(templates.Clone())
 	t.Funcs(template.FuncMap{"embed": func() error {
 		return t.Lookup("post.html").Execute(w, tmpldata)
 	}}).ExecuteTemplate(w, "main.html", tmpldata)
 
 	fmt.Fprintf(w, "<!-- rendered in %s -->", time.Since(reqTime).Truncate(time.Microsecond).String())
+}
+
+func (s *Server) saveHandler(w http.ResponseWriter, r *http.Request, targetBooru string, id int) {
+	data, err := s.Boorus[targetBooru].Post(r.Context(), id)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := s.save(r.Context(), data); err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	if rf := r.Referer(); rf != "" {
+		// Redirect back
+		w.Header().Set("Location", rf)
+		w.WriteHeader(303) // See Other
+		return
+	}
+
+	w.WriteHeader(201) // We did what we needed to do.
+	// I would attempt to redirect back, but you don't allow me to.
 }
