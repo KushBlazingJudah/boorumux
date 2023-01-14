@@ -24,10 +24,10 @@ var (
 var proxyFn func(*http.Request) (*url.URL, error) = nil
 
 type cfg struct {
-	Proxy     string                 `json:"proxy"`
-	Sources   map[string]interface{} `json:"sources"`
-	Localbooru string `json:"localbooru"`
-	Blacklist interface{}            `json:"blacklist"`
+	Proxy      string                 `json:"proxy"`
+	Sources    map[string]interface{} `json:"sources"`
+	Localbooru string                 `json:"localbooru"`
+	Blacklist  interface{}            `json:"blacklist"`
 }
 
 func mkDefaults() {
@@ -73,13 +73,17 @@ func genBooru(name string, b map[string]interface{}, c cfg) booru.API {
 	ht := &http.Client{}
 
 	if b["proxy"] != nil {
-		pu, err := url.Parse(b["proxy"].(string))
-		if err != nil {
-			log.Fatalf("error parsing proxy URL for booru \"%s\": %v", name, err)
-		}
+		if b["proxy"].(string) != "none!" {
+			pu, err := url.Parse(b["proxy"].(string))
+			if err != nil {
+				log.Fatalf("error parsing proxy URL for booru \"%s\": %v", name, err)
+			}
 
-		log.Printf("booru \"%s\" proxy is %s", name, pu.String())
-		ht.Transport = &http.Transport{Proxy: http.ProxyURL(pu)}
+			log.Printf("booru \"%s\" proxy is %s", name, pu.String())
+			ht.Transport = &http.Transport{Proxy: http.ProxyURL(pu)}
+		} else {
+			log.Printf("booru \"%s\" is using *no* proxy", name)
+		}
 	} else {
 		log.Printf("booru \"%s\" is using default proxy", name)
 		ht.Transport = &http.Transport{Proxy: proxyFn}

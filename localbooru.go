@@ -1,34 +1,34 @@
 package boorumux
 
 import (
-	"net/http"
-	"context"
-	"mime/multipart"
 	"bytes"
+	"context"
 	"encoding/json"
-	"strings"
-	"mime"
-	"time"
-	"io"
 	"fmt"
+	"io"
+	"mime"
+	"mime/multipart"
+	"net/http"
 	"path"
+	"strings"
+	"time"
 
 	"github.com/KushBlazingJudah/boorumux/booru"
 )
 
 type lbPostinfo struct {
-	Score  int      `json:"score"`
-	Source string   `json:"source,omitempty"`
-	Rating string   `json:"rating"`
-	Created time.Time `json:"created_at"`
-	Updated time.Time `json:"updated_at"`
-	Booru string `json:"booru,omitempty"`
-	BooruID string `json:"booru_id,omitempty"`
-	Hash   string `json:"md5"`
-	Ext    string `json:"file_ext"`
-	Width  int    `json:"image_width"`
-	Height int    `json:"image_height"`
-	TagString string `json:"tag_string"`
+	Score     int       `json:"score"`
+	Source    string    `json:"source,omitempty"`
+	Rating    string    `json:"rating"`
+	Created   time.Time `json:"created_at"`
+	Updated   time.Time `json:"updated_at"`
+	Booru     string    `json:"booru,omitempty"`
+	BooruID   string    `json:"booru_id,omitempty"`
+	Hash      string    `json:"md5"`
+	Ext       string    `json:"file_ext"`
+	Width     int       `json:"image_width"`
+	Height    int       `json:"image_height"`
+	TagString string    `json:"tag_string"`
 }
 
 func makePostinfo(bp *booru.Post) []byte {
@@ -36,15 +36,15 @@ func makePostinfo(bp *booru.Post) []byte {
 	ext := exts[0][1:]
 
 	pi := lbPostinfo{
-		Score:   bp.Score,
-		Source:  bp.Source,
-		Created: bp.Created,
-		Updated: bp.Updated,
-		Hash:    bp.Hash,
-		Ext: ext,
-		Width: bp.Original.Width,
-		Height: bp.Original.Height,
-		TagString:    strings.Join(bp.Tags, " "),
+		Score:     bp.Score,
+		Source:    bp.Source,
+		Created:   bp.Created,
+		Updated:   bp.Updated,
+		Hash:      bp.Hash,
+		Ext:       ext,
+		Width:     bp.Original.Width,
+		Height:    bp.Original.Height,
+		TagString: strings.Join(bp.Tags, " "),
 	}
 
 	// TODO: Booru, BooruID
