@@ -31,7 +31,7 @@ type lbPostinfo struct {
 	TagString string    `json:"tag_string"`
 }
 
-func makePostinfo(bp *booru.Post) []byte {
+func makePostinfo(bp *booru.Post, name string) []byte {
 	exts, _ := mime.ExtensionsByType(bp.Original.MIME)
 	ext := exts[0][1:]
 
@@ -45,9 +45,9 @@ func makePostinfo(bp *booru.Post) []byte {
 		Width:     bp.Original.Width,
 		Height:    bp.Original.Height,
 		TagString: strings.Join(bp.Tags, " "),
+		Booru:     name,
+		BooruID:   fmt.Sprint(bp.Id),
 	}
-
-	// TODO: Booru, BooruID
 
 	switch bp.Rating {
 	default:
@@ -66,7 +66,7 @@ func makePostinfo(bp *booru.Post) []byte {
 	return b
 }
 
-func (s *Server) save(ctx context.Context, post *booru.Post) error {
+func (s *Server) save(ctx context.Context, post *booru.Post, bname string) error {
 	buf := &bytes.Buffer{}
 	mf := multipart.NewWriter(buf)
 
@@ -76,7 +76,7 @@ func (s *Server) save(ctx context.Context, post *booru.Post) error {
 		return err
 	}
 
-	_, err = pi.Write(makePostinfo(post))
+	_, err = pi.Write(makePostinfo(post, bname))
 	if err != nil {
 		return err
 	}

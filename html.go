@@ -243,7 +243,7 @@ func (s *Server) saveHandler(w http.ResponseWriter, r *http.Request, targetBooru
 		panic(err)
 	}
 
-	if err := s.save(r.Context(), data); err != nil {
+	if err := s.save(r.Context(), data, targetBooru); err != nil {
 		w.Write([]byte(err.Error()))
 		return
 	}
