@@ -17,7 +17,8 @@
 	{{pages (mkUrl .booru .q .mux) $attrs $page}}
 	<hr>
 	{{else if .localbooru}}
-	<a href="/{{$c}}?save={{.post.Id}}">Save in Localbooru</a>
+	<h3>Localbooru</h3>
+	<a href="/{{$booru}}?save={{.post.Id}}">Save</a>
 	{{end}}
 
 	<h3>Boorus</h3>
