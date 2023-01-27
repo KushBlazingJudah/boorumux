@@ -180,9 +180,10 @@ func (s *Server) pageHandler(w http.ResponseWriter, r *http.Request, targetBooru
 		tmpldata["title"] = fmt.Sprintf("%s #%d - Boorumux", tmpldata["q"], page)
 	}
 
-	templates.Funcs(template.FuncMap{
+	t := template.Must(templates.Clone())
+	t.Funcs(template.FuncMap{
 		"embed": func() error {
-			return templates.Lookup("page.html").Execute(w, tmpldata)
+			return t.Lookup("page.html").Execute(w, tmpldata)
 		},
 		"booruId": func(b booru.API) string {
 			for k, v := range s.Boorus {
@@ -224,8 +225,9 @@ func (s *Server) postHandler(w http.ResponseWriter, r *http.Request, targetBooru
 	tmpldata["q"] = r.URL.Query().Get("q")
 	tmpldata["from"] = r.URL.Query().Get("from")
 
-	templates.Funcs(template.FuncMap{"embed": func() error {
-		return templates.Lookup("post.html").Execute(w, tmpldata)
+	t := template.Must(templates.Clone())
+	t.Funcs(template.FuncMap{"embed": func() error {
+		return t.Lookup("post.html").Execute(w, tmpldata)
 	}}).ExecuteTemplate(w, "main.html", tmpldata)
 
 	fmt.Fprintf(w, "<!-- rendered in %s -->", time.Since(reqTime).Truncate(time.Microsecond).String())

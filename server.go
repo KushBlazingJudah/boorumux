@@ -102,8 +102,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer checkin(tmpldata)
 		tmpldata["boorus"] = s.boorus
 
-		templates.Funcs(template.FuncMap{"embed": func() error {
-			return templates.Lookup("index.html").Execute(w, tmpldata)
+		t := template.Must(templates.Clone())
+		t.Funcs(template.FuncMap{"embed": func() error {
+			return t.Lookup("index.html").Execute(w, tmpldata)
 		}}).ExecuteTemplate(w, "main.html", tmpldata)
 		return
 	}
