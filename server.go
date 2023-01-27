@@ -20,6 +20,7 @@ const (
 	reqPost reqType = iota
 	reqPage
 	reqProxy
+	reqSave
 )
 
 const (
@@ -65,6 +66,9 @@ type Server struct {
 	// Posts containing these tags will not be shown in the page view, however
 	// if explicitly requested they will be presented.
 	Blacklist []filter.Filter
+
+	// Localbooru host.
+	Localbooru string
 
 	boorus []string
 
@@ -144,13 +148,21 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		action = reqPage
 	} else if p := r.URL.Query().Get("post"); p != "" {
-		// Page request
+		// Post request
 		v, err = strconv.Atoi(p)
 		if err != nil {
 			// TODO
 			panic(err)
 		}
 		action = reqPost
+	} else if p := r.URL.Query().Get("save"); p != "" {
+		// Save request
+		v, err = strconv.Atoi(p)
+		if err != nil {
+			// TODO
+			panic(err)
+		}
+		action = reqSave
 	}
 
 	// Parse tags
@@ -163,6 +175,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.pageHandler(w, r, targetBooru, v, tags)
 	case reqPost:
 		s.postHandler(w, r, targetBooru, v)
+	case reqSave:
+		s.saveHandler(w, r, targetBooru, v)
 	}
 }
 
